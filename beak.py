@@ -5,7 +5,7 @@ from drawable import *
 
 class Beak(Weapon):
     def __init__(self, owner: Drawable):
-        super().__init__(owner)
+        super().__init__(owner, -1)
         self.speed = 3  # Higher number is slower firing rate
 
     def use(self, callback: Callable[[Drawable], []]):

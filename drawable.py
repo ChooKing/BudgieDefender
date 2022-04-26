@@ -10,13 +10,7 @@ class Drawable(pygame.sprite.Sprite, ABC):
             self.image = pygame.transform.smoothscale(self.image, (
                 int(self.image.get_width() * scale), int(self.image.get_height() * scale)))
         self.rect = self.image.get_rect()
-        self.visible = False
 
-    def show(self):
-        self.visible = True
-
-    def hide(self):
-        self.visible = False
 
     def get_width(self) -> int:
         return self.rect.width

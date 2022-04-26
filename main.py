@@ -1,7 +1,11 @@
+import random
+
 import pygame.sprite
+from random import Random
 
 from player import *
 from icecream import *
+from airplane import *
 from typing import List
 
 
@@ -23,18 +27,35 @@ class Game:
 
         self.player = Player("./assets/budgie.bmp", 0.25, 30)
         self.player.rect.move_ip(int((self.surface_width / 2) - (self.player.get_width() / 2)), int(self.surface_height - self.player.get_height()))
-        self.player.show()
+
 
         self.drawables = pygame.sprite.Group()
         self.drawables.add(self.player)
+
+        self.icecreams = pygame.sprite.Group()
 
         self.main_surface.blit(pygame.transform.scale(self.screen, (self.screen_width, self.screen_height)), (0, 0))
         self.frame = 0
         pygame.display.flip()
 
-    def add_drawable(self, drawable: Drawable):
-        drawable.show()
+        self.new_plane_event = pygame.USEREVENT + 1
+        pygame.time.set_timer(self.new_plane_event, 2500)
+        self.planes = pygame.sprite.Group()
+
+
+
+    def add_icecream(self, drawable: Drawable):
         self.drawables.add(drawable)
+        self.icecreams.add(drawable)
+
+    def explode_planes(self, colliders):
+
+        for (icecream, planes) in colliders.items():
+
+            icecream.kill()
+            for plane in planes:
+                plane.kill()
+
 
     def update(self):
         if self.player.direction != Direction.STILL:
@@ -48,10 +69,19 @@ class Game:
 
         if self.player.attacking:
             if self.frame % self.player.weapon.speed == 0:
-                self.player.weapon.use(self.add_drawable)
+                self.player.weapon.use(self.add_icecream)
+
+        colliders = pygame.sprite.groupcollide(self.icecreams, self.planes, False, False)
+        if colliders:
+            self.explode_planes(colliders)
 
         self.main_surface.blit(pygame.transform.smoothscale(self.screen, (self.screen_width, self.screen_height)), (0, 0))
 
+    def addplane(self):
+        newplane = Airplane(random.randint(self.player.get_width(), self.surface_width-self.player.get_width()), self.screen_height)
+
+        self.drawables.add(newplane)
+        self.planes.add(newplane)
 
     def run(self):
         while True:
@@ -59,7 +89,7 @@ class Game:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     quit()
-                if event.type == pygame.KEYDOWN:
+                elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
                         self.player.direction = Direction.LEFT
                     elif event.key == pygame.K_RIGHT:
@@ -67,12 +97,14 @@ class Game:
                     elif event.key == pygame.K_SPACE:
                         self.player.attacking = True
 
-                if event.type == pygame.KEYUP:
+                elif event.type == pygame.KEYUP:
                     if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                         self.player.direction = Direction.STILL
 
                     if event.key == pygame.K_SPACE:
                         self.player.attacking = False
+                elif event.type == self.new_plane_event:
+                    self.addplane()
 
             self.update()
             pygame.display.update()

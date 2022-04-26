@@ -3,8 +3,8 @@ from drawable import *
 
 
 class Weapon(ABC):
-    def __init__(self, owner: Drawable):
-        self.ammunition = []
+    def __init__(self, owner: Drawable, ammo_qty):
+        self.ammo_qty = ammo_qty  # -1 for infinite
         self.owner = owner
         self.speed = 0
 

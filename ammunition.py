@@ -14,5 +14,7 @@ class Ammunition(Drawable):
         self.rect.x += self.speed_x
         if self.get_height() - self.speed_y > 0:
             self.rect.y += self.speed_y
-        # CHECK COLLISION
+        else:
+            self.kill()
+
 
