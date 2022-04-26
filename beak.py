@@ -9,5 +9,5 @@ class Beak(Weapon):
         self.speed = 3  # Higher number is slower firing rate
 
     def use(self, callback: Callable[[Drawable], []]):
-        callback(IceCream(self.owner.x + int(self.owner.get_width()/2 - IceCream.WIDTH/2), self.owner.y))
+        callback(IceCream(self.owner.rect.x + int(self.owner.get_width()/2 - IceCream.WIDTH/2), self.owner.rect.y))
 

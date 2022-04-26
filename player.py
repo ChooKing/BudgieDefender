@@ -28,15 +28,15 @@ class Player(Drawable):
     def move(self, max_x: int, max_y: int):
         """max_x and max_y specify the extents for movement"""
         if self.direction == Direction.LEFT:
-            if self.x - self.speed > 0:
-                self.x -= self.speed
+            if self.rect.x - self.speed > 0:
+                self.rect.x -= self.speed
             else:
-                self.x = 0
+                self.rect.x = 0
         elif self.direction == Direction.RIGHT:
-            if self.x + self.speed + self.get_width() < max_x:
-                self.x += self.speed
+            if self.rect.x + self.speed + self.get_width() < max_x:
+                self.rect.x += self.speed
             else:
-                self.x = max_x - self.get_width()
+                self.rect.x = max_x - self.get_width()
 
 
     def update(self):

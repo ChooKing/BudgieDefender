@@ -1,3 +1,5 @@
+import pygame.sprite
+
 from player import *
 from icecream import *
 from typing import List
@@ -20,11 +22,11 @@ class Game:
         self.screen.fill(Game.BG_COLOR)
 
         self.player = Player("./assets/budgie.bmp", 0.25, 30)
-        self.player.move_to(int((self.surface_width / 2) - (self.player.get_width() / 2)), int(self.surface_height - self.player.get_height()))
+        self.player.rect.move_ip(int((self.surface_width / 2) - (self.player.get_width() / 2)), int(self.surface_height - self.player.get_height()))
         self.player.show()
 
-        self.drawables: List[Drawable] = []
-        self.drawables.append(self.player)
+        self.drawables = pygame.sprite.Group()
+        self.drawables.add(self.player)
 
         self.main_surface.blit(pygame.transform.scale(self.screen, (self.screen_width, self.screen_height)), (0, 0))
         self.frame = 0
@@ -32,7 +34,7 @@ class Game:
 
     def add_drawable(self, drawable: Drawable):
         drawable.show()
-        self.drawables.append(drawable)
+        self.drawables.add(drawable)
 
     def update(self):
         if self.player.direction != Direction.STILL:
@@ -40,9 +42,9 @@ class Game:
 
         self.screen.fill(Game.BG_COLOR)
 
-        for drawable in self.drawables:
-            drawable.update()
-            drawable.draw(self.screen)
+        self.drawables.update()
+        self.drawables.draw(self.screen)
+
 
         if self.player.attacking:
             if self.frame % self.player.weapon.speed == 0:

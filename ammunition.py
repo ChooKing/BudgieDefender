@@ -11,8 +11,8 @@ class Ammunition(Drawable):
 
     def update(self):
         """Propels ammunition one step forward per frame"""
-        self.x += self.speed_x
+        self.rect.x += self.speed_x
         if self.get_height() - self.speed_y > 0:
-            self.y += self.speed_y
+            self.rect.y += self.speed_y
         # CHECK COLLISION
 

@@ -10,8 +10,6 @@ class Drawable(pygame.sprite.Sprite, ABC):
             self.image = pygame.transform.smoothscale(self.image, (
                 int(self.image.get_width() * scale), int(self.image.get_height() * scale)))
         self.rect = self.image.get_rect()
-        self.x = 0
-        self.y = 0
         self.visible = False
 
     def show(self):
@@ -19,10 +17,6 @@ class Drawable(pygame.sprite.Sprite, ABC):
 
     def hide(self):
         self.visible = False
-
-    def move_to(self, x, y):
-        self.x = x
-        self.y = y
 
     def get_width(self) -> int:
         return self.rect.width
@@ -34,7 +28,4 @@ class Drawable(pygame.sprite.Sprite, ABC):
     def update(self):
         pass
 
-    def draw(self, destination: pygame.Surface):
-        if self.visible:
-            destination.blit(self.image, (self.x, self.y))
 
