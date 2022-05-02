@@ -15,6 +15,7 @@ class Game:
 
     def __init__(self):
         pygame.init()
+        pygame.key.set_repeat(1, 10)
         self.clock = pygame.time.Clock()
         self.screen_width = pygame.display.Info().current_w
         self.screen_height = pygame.display.Info().current_h - 100
@@ -25,7 +26,8 @@ class Game:
         self.screen = pygame.Surface((self.surface_width, self.surface_height))
         self.screen.fill(Game.BG_COLOR)
 
-        self.player = Player("./assets/budgie.bmp", 0.25, 30)
+        self.player = Player("./assets/budgie.bmp", 0.25, 1)
+        self.player.set_limits(self.surface_width, self.surface_height)
         self.player.rect.move_ip(int((self.surface_width / 2) - (self.player.get_width() / 2)), int(self.surface_height - self.player.get_height()))
 
 
@@ -58,9 +60,6 @@ class Game:
 
 
     def update(self):
-        if self.player.direction != Direction.STILL:
-            self.player.move(self.surface_width, self.surface_height)
-
         self.screen.fill(Game.BG_COLOR)
 
         self.drawables.update()
@@ -91,15 +90,15 @@ class Game:
                     quit()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
-                        self.player.direction = Direction.LEFT
+                        self.player.speedX -= 1
                     elif event.key == pygame.K_RIGHT:
-                        self.player.direction = Direction.RIGHT
+                        self.player.speedX += 1
                     elif event.key == pygame.K_SPACE:
                         self.player.attacking = True
 
                 elif event.type == pygame.KEYUP:
                     if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
-                        self.player.direction = Direction.STILL
+                        self.player.speedX = 0
 
                     if event.key == pygame.K_SPACE:
                         self.player.attacking = False

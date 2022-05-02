@@ -2,42 +2,33 @@ from enum import Enum
 from beak import *
 
 
-class Direction(Enum):
-    LEFT = -1
-    STILL = 0
-    RIGHT = 1
+
 
 
 class Player(Drawable):
-    def __init__(self, image: str, scale: float, speed: int):
+    def __init__(self, image: str, scale: float, speedfactor: int):
         super().__init__(image, scale)
+        self.max_y = 0
+        self.max_x = 0
         self.score = 0
-        self.__direction = Direction.STILL
-        self.speed = speed
+        self.speedX = 0
+        self.speedY = 0
+        self.speedfactor = speedfactor
         self.weapon = Beak(self)
         self.attacking = False
 
-    @property
-    def direction(self):
-        return self.__direction
-
-    @direction.setter
-    def direction(self, direction: Direction):
-        self.__direction = direction
-
-    def move(self, max_x: int, max_y: int):
-        """max_x and max_y specify the extents for movement"""
-        if self.direction == Direction.LEFT:
-            if self.rect.x - self.speed > 0:
-                self.rect.x -= self.speed
-            else:
-                self.rect.x = 0
-        elif self.direction == Direction.RIGHT:
-            if self.rect.x + self.speed + self.get_width() < max_x:
-                self.rect.x += self.speed
-            else:
-                self.rect.x = max_x - self.get_width()
-
+    def set_limits(self, max_x: int, max_y: int):
+        self.max_x = max_x
+        self.max_y = max_y
 
     def update(self):
-        pass
+        if self.speedX < 0:
+            if self.rect.x + self.speedX * self.speedfactor > 0:
+                self.rect.x += self.speedX * self.speedfactor
+            else:
+                self.rect.x = 0
+        elif self.speedX > 0:
+            if self.rect.x + self.speedX * self.speedfactor + self.get_width() < self.max_x:
+                self.rect.x += self.speedX * self.speedfactor
+            else:
+                self.rect.x = self.max_x - self.get_width()
