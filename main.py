@@ -8,6 +8,7 @@ from icecream import *
 from airplane import *
 from typing import List
 
+from explosion import *
 
 class Game:
     BG_COLOR = (10, 20, 127)
@@ -46,6 +47,7 @@ class Game:
 
 
 
+
     def add_icecream(self, drawable: Drawable):
         self.drawables.add(drawable)
         self.icecreams.add(drawable)
@@ -53,17 +55,19 @@ class Game:
     def explode_planes(self, colliders):
 
         for (icecream, planes) in colliders.items():
-
+            self.drawables.add(Explosion(icecream.rect.x, icecream.rect.y))
             icecream.kill()
             for plane in planes:
-                plane.kill()
+                plane.dying = True
 
 
     def update(self):
         self.screen.fill(Game.BG_COLOR)
 
+
         self.drawables.update()
         self.drawables.draw(self.screen)
+
 
 
         if self.player.attacking:
