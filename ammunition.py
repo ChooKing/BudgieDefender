@@ -2,8 +2,8 @@ from drawable import *
 
 
 class Ammunition(Drawable):
-    def __init__(self, image: str, damage: int, speed_x: int, speed_y: int, scale=1):
-        super().__init__(image, scale)
+    def __init__(self, ctx: pygame.surface, image: str, damage: int, speed_x: int, speed_y: int, scale=1):
+        super().__init__(ctx, image, scale)
         self.damage = damage  # Number of health points subtracted upon impact
         self.speed_x = speed_x
         self.speed_y = speed_y
