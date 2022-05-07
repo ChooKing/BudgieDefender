@@ -27,13 +27,17 @@ class Game:
         self.screen = pygame.Surface((self.surface_width, self.surface_height))
         self.screen.fill(Game.BG_COLOR)
 
-        self.player = Player("./assets/budgie.bmp", 0.25, 1)
+
+
+        self.player = Player(self.screen, "./assets/budgie.bmp", 0.25, 1)
         self.player.set_limits(self.surface_width, self.surface_height)
         self.player.rect.move_ip(int((self.surface_width / 2) - (self.player.get_width() / 2)), int(self.surface_height - self.player.get_height()))
 
 
         self.drawables = pygame.sprite.Group()
         self.drawables.add(self.player)
+
+        self.snakes = pygame.sprite.Group()
 
         self.icecreams = pygame.sprite.Group()
 
@@ -52,10 +56,14 @@ class Game:
         self.drawables.add(drawable)
         self.icecreams.add(drawable)
 
+    def add_snake(self, drawable: Animation):
+
+        self.snakes.add(drawable)
+
     def explode_planes(self, colliders):
 
         for (icecream, planes) in colliders.items():
-            self.drawables.add(Explosion(icecream.rect.x, icecream.rect.y))
+            self.drawables.add(Explosion(self.screen, icecream.rect.x, icecream.rect.y))
             icecream.kill()
             for plane in planes:
                 plane.dying = True
@@ -63,7 +71,8 @@ class Game:
 
     def update(self):
         self.screen.fill(Game.BG_COLOR)
-
+        self.snakes.update()
+        self.snakes.draw(self.screen)
 
         self.drawables.update()
         self.drawables.draw(self.screen)
@@ -77,11 +86,14 @@ class Game:
         colliders = pygame.sprite.groupcollide(self.icecreams, self.planes, False, False)
         if colliders:
             self.explode_planes(colliders)
+        dead_snakes = pygame.sprite.groupcollide(self.icecreams, self.snakes, True, True)
+        if dead_snakes:
+            pass  #Increase score
 
         self.main_surface.blit(pygame.transform.smoothscale(self.screen, (self.screen_width, self.screen_height)), (0, 0))
 
     def addplane(self):
-        newplane = Airplane(random.randint(self.player.get_width(), self.surface_width-self.player.get_width()), self.screen_height)
+        newplane = Airplane(self.screen, random.randint(self.player.get_width(), self.surface_width-self.player.get_width()), self.screen_height, self.add_snake)
 
         self.drawables.add(newplane)
         self.planes.add(newplane)

@@ -1,20 +1,16 @@
-from enum import Enum
 from beak import *
 
 
-
-
-
 class Player(Drawable):
-    def __init__(self, image: str, scale: float, speedfactor: int):
-        super().__init__(image, scale)
+    def __init__(self, ctx: pygame.surface, image: str, scale: float, speedfactor: int):
+        super().__init__(ctx, image, scale)
         self.max_y = 0
         self.max_x = 0
         self.score = 0
         self.speedX = 0
         self.speedY = 0
         self.speedfactor = speedfactor
-        self.weapon = Beak(self)
+        self.weapon = Beak(ctx, self)
         self.attacking = False
 
     def set_limits(self, max_x: int, max_y: int):
