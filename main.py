@@ -7,18 +7,26 @@ from explosion import *
 class Game:
     BG_COLOR = (10, 20, 127)
     FRAME_RATE = 20
+    STATUS_HEIGHT = 100
 
     def __init__(self):
         pygame.init()
-        pygame.key.set_repeat(1, 10)
+        pygame.display.set_caption("Budgie Defender")
+        pygame.key.set_repeat(1, 20)
+        self.level = 1
+        self.score = 0
+        self.lives = 4
+        self.font = pygame.font.Font('./assets/Goldman-Bold.ttf', 50)
+        self.game_title = self.font.render("BUDGIE DEFENDER", True, (0, 255, 0))
         self.clock = pygame.time.Clock()
         self.screen_width = pygame.display.Info().current_w
         self.screen_height = pygame.display.Info().current_h - 100
-        self.surface_width = 1920
-        self.surface_height = 1080
+        self.surface_width = self.screen_width
+        self.surface_height = self.screen_height - Game.STATUS_HEIGHT
         self.main_surface = pygame.display.set_mode((self.screen_width, self.screen_height))
         self.screen = pygame.Surface((self.surface_width, self.surface_height))
         self.screen.fill(Game.BG_COLOR)
+        self.stats_surface = pygame.Surface((self.screen_width, Game.STATUS_HEIGHT))
         self.sprites = pygame.sprite.Group()  #Used only to batch update but not draw
         self.snakes = pygame.sprite.Group()
         self.icecreams = pygame.sprite.Group()
@@ -30,7 +38,7 @@ class Game:
         self.player.rect.move_ip(int((self.surface_width / 2) - (self.player.get_width() / 2)), int(self.surface_height - self.player.get_height()))
         self.sprites.add(self.player)
 
-        self.main_surface.blit(pygame.transform.scale(self.screen, (self.screen_width, self.screen_height)), (0, 0))
+        self.main_surface.blit(pygame.transform.scale(self.screen, (self.surface_width, self.surface_height)), (0, 0))
         pygame.display.flip()
 
         self.new_plane_event = pygame.USEREVENT + 1
@@ -57,14 +65,27 @@ class Game:
             for plane in planes:
                 plane.dying = True
 
+    def update_status(self):
+        pass
+
+    def draw_status(self):
+        self.stats_surface.fill((0, 0, 0))
+        self.stats_surface.blit(self.game_title, (20, 25))
+        level_text = self.font.render(f"LEVEL: {self.level}", True, (0, 255, 0))
+        self.stats_surface.blit(level_text, (750, 25))
+        score_text = self.font.render(f"SCORE: {self.score}", True, (0, 255, 0))
+        self.stats_surface.blit(score_text, (self.surface_width - score_text.get_width() - 20, 25))
+
     def update(self):
         self.screen.fill(Game.BG_COLOR)
         self.sprites.update()
+        # Draw groups in separate batches to guarantee stacking order without performance penalty of OrderedUpdates
         self.snakes.draw(self.screen)
-        self.icecreams.draw(self.screen)
         self.planes.draw(self.screen)
+        self.icecreams.draw(self.screen)
         self.explosions.draw(self.screen)
         self.screen.blit(self.player.image, self.player.rect)
+
 
         colliders = pygame.sprite.groupcollide(self.icecreams, self.planes, False, False)
         if colliders:
@@ -73,7 +94,10 @@ class Game:
         if dead_snakes:
             pass  #Increase score
 
-        self.main_surface.blit(pygame.transform.smoothscale(self.screen, (self.screen_width, self.screen_height)), (0, 0))
+        self.main_surface.blit(pygame.transform.smoothscale(self.screen, (self.surface_width, self.surface_height)), (0, 0))
+        self.update_status()
+        self.draw_status()
+        self.main_surface.blit(self.stats_surface, (0, self.surface_height))
 
     def run(self):
         while True:
