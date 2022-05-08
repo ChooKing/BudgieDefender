@@ -12,7 +12,7 @@ class Game:
     def __init__(self):
         pygame.init()
         pygame.display.set_caption("Budgie Defender")
-        pygame.key.set_repeat(1, 20)
+        pygame.key.set_repeat(1, 10)
         self.level = 1
         self.score = 0
         self.lives = 4
@@ -27,6 +27,7 @@ class Game:
         self.screen = pygame.Surface((self.surface_width, self.surface_height))
         self.screen.fill(Game.BG_COLOR)
         self.stats_surface = pygame.Surface((self.screen_width, Game.STATUS_HEIGHT))
+
         self.sprites = pygame.sprite.Group()  #Used only to batch update but not draw
         self.snakes = pygame.sprite.Group()
         self.icecreams = pygame.sprite.Group()
@@ -42,7 +43,8 @@ class Game:
         pygame.display.flip()
 
         self.new_plane_event = pygame.USEREVENT + 1
-        pygame.time.set_timer(self.new_plane_event, 2500)
+        pygame.time.set_timer(self.new_plane_event, 300)
+        self.plane_req_count = 0
 
     def add_plane(self):
         self.add_drawable(Airplane(self.screen, random.randint(self.player.get_width(), self.surface_width-self.player.get_width()), self.screen_height, self.add_snake, self.increment_score), self.planes)
@@ -67,6 +69,7 @@ class Game:
 
     def increment_score(self, amount: int):
         self.score += amount
+        self.level = (self.score // 50) + 1
 
     def draw_status(self):
         self.stats_surface.fill((0, 0, 0))
@@ -120,7 +123,12 @@ class Game:
                     if event.key == pygame.K_SPACE:
                         self.player.attacking = False
                 elif event.type == self.new_plane_event:
-                    self.add_plane()
+                    self.plane_req_count += 1
+                    if self.level > 11 or self.plane_req_count > (11 - self.level):
+                        self.add_plane()
+                        self.plane_req_count = 0
+
+
 
             self.update()
             pygame.display.update()
