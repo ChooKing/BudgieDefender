@@ -109,26 +109,25 @@ class Game:
                     pygame.quit()
                     quit()
                 elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_LEFT:
-                        self.player.speedX -= 2
-                    elif event.key == pygame.K_RIGHT:
-                        self.player.speedX += 2
-                    elif event.key == pygame.K_SPACE:
+                    keys = pygame.key.get_pressed()
+                    if keys[pygame.K_LEFT]:
+                        self.player.speedX -= 1
+                    if keys[pygame.K_RIGHT]:
+                        self.player.speedX += 1
+                    if keys[pygame.K_SPACE]:
                         self.player.attacking = True
 
                 elif event.type == pygame.KEYUP:
                     if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                         self.player.speedX = 0
-
                     if event.key == pygame.K_SPACE:
                         self.player.attacking = False
+
                 elif event.type == self.new_plane_event:
                     self.plane_req_count += 1
                     if self.level > 11 or self.plane_req_count > (11 - self.level):
                         self.add_plane()
                         self.plane_req_count = 0
-
-
 
             self.update()
             pygame.display.update()
