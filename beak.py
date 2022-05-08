@@ -6,7 +6,7 @@ from scaled_sprite import *
 class Beak(Weapon):
     def __init__(self, ctx: pygame.surface, owner: ScaledSprite):
         super().__init__(owner, -1)
-        self.speed = 3  # Higher number is slower firing rate
+        self.speed = 2  # Higher number is slower firing rate
         self.ctx = ctx
         self.use_count = 0
 

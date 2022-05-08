@@ -85,10 +85,12 @@ class Game:
         # Draw groups in separate batches to guarantee stacking order without performance penalty of OrderedUpdates
         self.snakes.draw(self.screen)
         self.planes.draw(self.screen)
-        self.icecreams.draw(self.screen)
         self.explosions.draw(self.screen)
         self.screen.blit(self.player.image, self.player.rect)
+        self.icecreams.draw(self.screen)
 
+        if pygame.sprite.spritecollideany(self.player, self.snakes):
+            self.player.dying = True
 
         colliders = pygame.sprite.groupcollide(self.icecreams, self.planes, False, False)
         if colliders:
@@ -124,10 +126,11 @@ class Game:
                         self.player.attacking = False
 
                 elif event.type == self.new_plane_event:
-                    self.plane_req_count += 1
-                    if self.level > 11 or self.plane_req_count > (11 - self.level):
-                        self.add_plane()
-                        self.plane_req_count = 0
+                    if not self.player.dying:
+                        self.plane_req_count += 1
+                        if self.level > 11 or self.plane_req_count > (11 - self.level):
+                            self.add_plane()
+                            self.plane_req_count = 0
 
             self.update()
             pygame.display.update()

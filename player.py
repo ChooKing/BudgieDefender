@@ -3,7 +3,7 @@ from beak import *
 
 class Player(ScaledSprite):
     def __init__(self, ctx: pygame.surface, image: str, scale: float, speedfactor: int, on_use_weapon: Callable[[ScaledSprite],[]]):
-        super().__init__(ctx, image, scale)
+        ScaledSprite.__init__(self, ctx, image, scale)
         self.max_y = 0
         self.max_x = 0
         self.score = 0
@@ -13,22 +13,35 @@ class Player(ScaledSprite):
         self.weapon = Beak(ctx, self)
         self.attacking = False
         self.on_use_weapon = on_use_weapon
+        self.dying = False
+        self.death_count = 0
 
     def set_limits(self, max_x: int, max_y: int):
         self.max_x = max_x
         self.max_y = max_y
 
     def update(self):
-        if self.attacking:
-            self.weapon.use(self.on_use_weapon)
+        if not self.dying:
+            if self.attacking:
+                self.weapon.use(self.on_use_weapon)
 
-        if self.speedX < 0:
-            if self.rect.x + self.speedX * self.speedfactor > 0:
-                self.rect.x += self.speedX * self.speedfactor
-            else:
-                self.rect.x = 0
-        elif self.speedX > 0:
-            if self.rect.x + self.speedX * self.speedfactor + self.get_width() < self.max_x:
-                self.rect.x += self.speedX * self.speedfactor
-            else:
-                self.rect.x = self.max_x - self.get_width()
+            if self.speedX < 0:
+                if self.rect.x + self.speedX * self.speedfactor > 0:
+                    self.rect.x += self.speedX * self.speedfactor
+                else:
+                    self.rect.x = 0
+            elif self.speedX > 0:
+                if self.rect.x + self.speedX * self.speedfactor + self.get_width() < self.max_x:
+                    self.rect.x += self.speedX * self.speedfactor
+                else:
+                    self.rect.x = self.max_x - self.get_width()
+        else:
+            self.speedX = 0
+            self.death_count += 1
+            if self.death_count < 30:
+                self.image = pygame.transform.rotate(self.image, 3)
+                self.rect.width = self.image.get_width()
+                self.rect.height = self.image.get_height()
+                self.rect.y -= 9
+                self.rect.x -= 10
+
