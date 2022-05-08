@@ -9,7 +9,7 @@ class Airplane(ScaledSprite, Mortal):
     ATTACK_RATE = 120
     SPEED = 2
 
-    def __init__(self, ctx: pygame.surface, x: int, max_y: int, register_ammo: Callable[[Animation], []]):
+    def __init__(self, ctx: pygame.surface, x: int, max_y: int, register_ammo: Callable[[Animation], []], update_score: Callable[[int], []]):
         ScaledSprite.__init__(self, ctx, './assets/airplane.bmp', 0.5)
         Mortal.__init__(self, 6, False)
         self.rect.x = x
@@ -18,11 +18,13 @@ class Airplane(ScaledSprite, Mortal):
         self.explosion_counter = 0
         self.weapon = PythonCannon(self)
         self.register_ammo = register_ammo
+        self.update_score = update_score
 
 
     def update(self):
         Mortal.update(self)
         if self.dead:
+            self.update_score(5)
             self.kill()
         self.rect.y += Airplane.SPEED
         if self.rect.y + self.rect.height > self.max_y:

@@ -45,7 +45,7 @@ class Game:
         pygame.time.set_timer(self.new_plane_event, 2500)
 
     def add_plane(self):
-        self.add_drawable(Airplane(self.screen, random.randint(self.player.get_width(), self.surface_width-self.player.get_width()), self.screen_height, self.add_snake), self.planes)
+        self.add_drawable(Airplane(self.screen, random.randint(self.player.get_width(), self.surface_width-self.player.get_width()), self.screen_height, self.add_snake, self.increment_score), self.planes)
 
     def add_icecream(self, drawable: ScaledSprite):
         self.sprites.add(drawable)
@@ -65,8 +65,8 @@ class Game:
             for plane in planes:
                 plane.dying = True
 
-    def update_status(self):
-        pass
+    def increment_score(self, amount: int):
+        self.score += amount
 
     def draw_status(self):
         self.stats_surface.fill((0, 0, 0))
@@ -92,10 +92,10 @@ class Game:
             self.explode_planes(colliders)
         dead_snakes = pygame.sprite.groupcollide(self.icecreams, self.snakes, True, True)
         if dead_snakes:
-            pass  #Increase score
+            self.increment_score(1)
 
         self.main_surface.blit(pygame.transform.smoothscale(self.screen, (self.surface_width, self.surface_height)), (0, 0))
-        self.update_status()
+
         self.draw_status()
         self.main_surface.blit(self.stats_surface, (0, self.surface_height))
 
