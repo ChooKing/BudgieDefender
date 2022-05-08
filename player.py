@@ -2,7 +2,7 @@ from beak import *
 
 
 class Player(ScaledSprite):
-    def __init__(self, ctx: pygame.surface, image: str, scale: float, speedfactor: int):
+    def __init__(self, ctx: pygame.surface, image: str, scale: float, speedfactor: int, on_use_weapon: Callable[[ScaledSprite],[]]):
         super().__init__(ctx, image, scale)
         self.max_y = 0
         self.max_x = 0
@@ -12,12 +12,16 @@ class Player(ScaledSprite):
         self.speedfactor = speedfactor
         self.weapon = Beak(ctx, self)
         self.attacking = False
+        self.on_use_weapon = on_use_weapon
 
     def set_limits(self, max_x: int, max_y: int):
         self.max_x = max_x
         self.max_y = max_y
 
     def update(self):
+        if self.attacking:
+            self.weapon.use(self.on_use_weapon)
+
         if self.speedX < 0:
             if self.rect.x + self.speedX * self.speedfactor > 0:
                 self.rect.x += self.speedX * self.speedfactor

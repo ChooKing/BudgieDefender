@@ -8,7 +8,11 @@ class Beak(Weapon):
         super().__init__(owner, -1)
         self.speed = 3  # Higher number is slower firing rate
         self.ctx = ctx
+        self.use_count = 0
 
     def use(self, callback: Callable[[ScaledSprite], []]):
-        callback(IceCream(self.ctx, self.owner.rect.x + int(self.owner.get_width()/2 - IceCream.WIDTH/2), self.owner.rect.y))
+        self.use_count += 1
+        if self.use_count > self.speed:
+            self.use_count = 0
+            callback(IceCream(self.ctx, self.owner.rect.x + int(self.owner.get_width()/2 - IceCream.WIDTH/2), self.owner.rect.y))
 

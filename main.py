@@ -1,14 +1,8 @@
-import random
-
 import pygame.sprite
-from random import Random
-
 from player import *
-from icecream import *
 from airplane import *
-from typing import List
-
 from explosion import *
+
 
 class Game:
     BG_COLOR = (10, 20, 127)
@@ -29,7 +23,7 @@ class Game:
 
 
 
-        self.player = Player(self.screen, "./assets/budgie.bmp", 0.25, 1)
+        self.player = Player(self.screen, "./assets/budgie.bmp", 0.25, 1, self.add_icecream)
         self.player.set_limits(self.surface_width, self.surface_height)
         self.player.rect.move_ip(int((self.surface_width / 2) - (self.player.get_width() / 2)), int(self.surface_height - self.player.get_height()))
 
@@ -38,8 +32,8 @@ class Game:
         self.sprites.add(self.player)
 
         self.snakes = pygame.sprite.Group()
-
         self.icecreams = pygame.sprite.Group()
+        self.explosions = pygame.sprite.Group()
 
         self.main_surface.blit(pygame.transform.scale(self.screen, (self.screen_width, self.screen_height)), (0, 0))
         self.frame = 0
@@ -49,39 +43,37 @@ class Game:
         pygame.time.set_timer(self.new_plane_event, 2500)
         self.planes = pygame.sprite.Group()
 
-
-
+    def add_plane(self):
+        newplane = Airplane(self.screen, random.randint(self.player.get_width(), self.surface_width-self.player.get_width()), self.screen_height, self.add_snake)
+        self.sprites.add(newplane)
+        self.planes.add(newplane)
 
     def add_icecream(self, drawable: ScaledSprite):
         self.sprites.add(drawable)
         self.icecreams.add(drawable)
 
     def add_snake(self, drawable: Animation):
+        self.add_drawable(drawable, self.snakes)
 
-        self.snakes.add(drawable)
+    def add_drawable(self, drawable: Drawable, group: pygame.sprite.Group):
+        self.sprites.add(drawable)
+        group.add(drawable)
 
     def explode_planes(self, colliders):
-
         for (icecream, planes) in colliders.items():
-            self.sprites.add(Explosion(self.screen, icecream.rect.x, icecream.rect.y))
+            self.add_drawable(Explosion(self.screen, icecream.rect.x, icecream.rect.y), self.explosions)
             icecream.kill()
             for plane in planes:
                 plane.dying = True
 
-
     def update(self):
         self.screen.fill(Game.BG_COLOR)
-        self.snakes.update()
-        self.snakes.draw(self.screen)
-
         self.sprites.update()
-        self.sprites.draw(self.screen)
-
-
-
-        if self.player.attacking:
-            if self.frame % self.player.weapon.speed == 0:
-                self.player.weapon.use(self.add_icecream)
+        self.snakes.draw(self.screen)
+        self.icecreams.draw(self.screen)
+        self.planes.draw(self.screen)
+        self.explosions.draw(self.screen)
+        self.screen.blit(self.player.image, self.player.rect)
 
         colliders = pygame.sprite.groupcollide(self.icecreams, self.planes, False, False)
         if colliders:
@@ -92,11 +84,7 @@ class Game:
 
         self.main_surface.blit(pygame.transform.smoothscale(self.screen, (self.screen_width, self.screen_height)), (0, 0))
 
-    def addplane(self):
-        newplane = Airplane(self.screen, random.randint(self.player.get_width(), self.surface_width-self.player.get_width()), self.screen_height, self.add_snake)
 
-        self.sprites.add(newplane)
-        self.planes.add(newplane)
 
     def run(self):
         while True:
@@ -119,7 +107,7 @@ class Game:
                     if event.key == pygame.K_SPACE:
                         self.player.attacking = False
                 elif event.type == self.new_plane_event:
-                    self.addplane()
+                    self.add_plane()
 
             self.update()
             pygame.display.update()
