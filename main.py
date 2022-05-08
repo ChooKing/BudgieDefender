@@ -16,37 +16,28 @@ class Game:
         self.screen_height = pygame.display.Info().current_h - 100
         self.surface_width = 1920
         self.surface_height = 1080
-
         self.main_surface = pygame.display.set_mode((self.screen_width, self.screen_height))
         self.screen = pygame.Surface((self.surface_width, self.surface_height))
         self.screen.fill(Game.BG_COLOR)
-
-
+        self.sprites = pygame.sprite.Group()  #Used only to batch update but not draw
+        self.snakes = pygame.sprite.Group()
+        self.icecreams = pygame.sprite.Group()
+        self.planes = pygame.sprite.Group()
+        self.explosions = pygame.sprite.Group()
 
         self.player = Player(self.screen, "./assets/budgie.bmp", 0.25, 1, self.add_icecream)
         self.player.set_limits(self.surface_width, self.surface_height)
         self.player.rect.move_ip(int((self.surface_width / 2) - (self.player.get_width() / 2)), int(self.surface_height - self.player.get_height()))
-
-
-        self.sprites = pygame.sprite.Group()
         self.sprites.add(self.player)
 
-        self.snakes = pygame.sprite.Group()
-        self.icecreams = pygame.sprite.Group()
-        self.explosions = pygame.sprite.Group()
-
         self.main_surface.blit(pygame.transform.scale(self.screen, (self.screen_width, self.screen_height)), (0, 0))
-        self.frame = 0
         pygame.display.flip()
 
         self.new_plane_event = pygame.USEREVENT + 1
         pygame.time.set_timer(self.new_plane_event, 2500)
-        self.planes = pygame.sprite.Group()
 
     def add_plane(self):
-        newplane = Airplane(self.screen, random.randint(self.player.get_width(), self.surface_width-self.player.get_width()), self.screen_height, self.add_snake)
-        self.sprites.add(newplane)
-        self.planes.add(newplane)
+        self.add_drawable(Airplane(self.screen, random.randint(self.player.get_width(), self.surface_width-self.player.get_width()), self.screen_height, self.add_snake), self.planes)
 
     def add_icecream(self, drawable: ScaledSprite):
         self.sprites.add(drawable)
@@ -84,8 +75,6 @@ class Game:
 
         self.main_surface.blit(pygame.transform.smoothscale(self.screen, (self.screen_width, self.screen_height)), (0, 0))
 
-
-
     def run(self):
         while True:
             for event in pygame.event.get():
@@ -112,9 +101,6 @@ class Game:
             self.update()
             pygame.display.update()
             self.clock.tick(Game.FRAME_RATE)
-            self.frame += 1
-            if self.frame > Game.FRAME_RATE:
-                self.frame = 0
 
 
 def main():
