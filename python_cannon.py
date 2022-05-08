@@ -1,10 +1,10 @@
 from weapon import *
 from snake import *
-from drawable import *
+from scaled_sprite import *
 
 
 class PythonCannon(Weapon):
-    def __init__(self, owner: Drawable):
+    def __init__(self, owner: ScaledSprite):
         super().__init__(owner, -1)
         self.speed = 3  # Higher number is slower firing rate
 

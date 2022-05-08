@@ -34,8 +34,8 @@ class Game:
         self.player.rect.move_ip(int((self.surface_width / 2) - (self.player.get_width() / 2)), int(self.surface_height - self.player.get_height()))
 
 
-        self.drawables = pygame.sprite.Group()
-        self.drawables.add(self.player)
+        self.sprites = pygame.sprite.Group()
+        self.sprites.add(self.player)
 
         self.snakes = pygame.sprite.Group()
 
@@ -52,8 +52,8 @@ class Game:
 
 
 
-    def add_icecream(self, drawable: Drawable):
-        self.drawables.add(drawable)
+    def add_icecream(self, drawable: ScaledSprite):
+        self.sprites.add(drawable)
         self.icecreams.add(drawable)
 
     def add_snake(self, drawable: Animation):
@@ -63,7 +63,7 @@ class Game:
     def explode_planes(self, colliders):
 
         for (icecream, planes) in colliders.items():
-            self.drawables.add(Explosion(self.screen, icecream.rect.x, icecream.rect.y))
+            self.sprites.add(Explosion(self.screen, icecream.rect.x, icecream.rect.y))
             icecream.kill()
             for plane in planes:
                 plane.dying = True
@@ -74,8 +74,8 @@ class Game:
         self.snakes.update()
         self.snakes.draw(self.screen)
 
-        self.drawables.update()
-        self.drawables.draw(self.screen)
+        self.sprites.update()
+        self.sprites.draw(self.screen)
 
 
 
@@ -95,7 +95,7 @@ class Game:
     def addplane(self):
         newplane = Airplane(self.screen, random.randint(self.player.get_width(), self.surface_width-self.player.get_width()), self.screen_height, self.add_snake)
 
-        self.drawables.add(newplane)
+        self.sprites.add(newplane)
         self.planes.add(newplane)
 
     def run(self):
@@ -106,9 +106,9 @@ class Game:
                     quit()
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
-                        self.player.speedX -= 1
+                        self.player.speedX -= 2
                     elif event.key == pygame.K_RIGHT:
-                        self.player.speedX += 1
+                        self.player.speedX += 2
                     elif event.key == pygame.K_SPACE:
                         self.player.attacking = True
 

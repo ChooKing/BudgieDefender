@@ -1,7 +1,7 @@
-from drawable import *
+from scaled_sprite import *
 
 
-class Ammunition(Drawable):
+class Ammunition(ScaledSprite):
     def __init__(self, ctx: pygame.surface, image: str, damage: int, speed_x: int, speed_y: int, scale=1):
         super().__init__(ctx, image, scale)
         self.damage = damage  # Number of health points subtracted upon impact

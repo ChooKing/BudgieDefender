@@ -1,16 +1,16 @@
-from drawable import *
+from scaled_sprite import *
 from mortal import *
 from python_cannon import *
 import random
 
 
-class Airplane(Drawable, Mortal):
+class Airplane(ScaledSprite, Mortal):
     WIDTH = 210
     ATTACK_RATE = 120
     SPEED = 2
 
     def __init__(self, ctx: pygame.surface, x: int, max_y: int, register_ammo: Callable[[Animation], []]):
-        Drawable.__init__(self, ctx, './assets/airplane.bmp', 0.5)
+        ScaledSprite.__init__(self, ctx, './assets/airplane.bmp', 0.5)
         Mortal.__init__(self, 6, False)
         self.rect.x = x
         self.max_y = max_y

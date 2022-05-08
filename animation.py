@@ -1,9 +1,9 @@
 from drawable import *
 
 
-class Animation(pygame.sprite.Sprite):
+class Animation(Drawable):
     def __init__(self, ctx: pygame.surface, image: str, width: int, count: int, scale: float, delay: int):
-        pygame.sprite.Sprite.__init__(self)
+        super().__init__(ctx)
         image_source = pygame.image.load(image)
         self.ctx = ctx
         if scale != 1:

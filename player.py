@@ -1,7 +1,7 @@
 from beak import *
 
 
-class Player(Drawable):
+class Player(ScaledSprite):
     def __init__(self, ctx: pygame.surface, image: str, scale: float, speedfactor: int):
         super().__init__(ctx, image, scale)
         self.max_y = 0
