@@ -34,7 +34,7 @@ class Game:
         self.planes = pygame.sprite.Group()
         self.explosions = pygame.sprite.Group()
 
-        self.player = Player(self.screen, "./assets/budgie.bmp", 0.25, 1, self.add_icecream)
+        self.player = Player(self.screen, "./assets/budgie.bmp", 0.25, 1, self.add_icecream, self.new_life)
         self.player.set_limits(self.surface_width, self.surface_height)
         self.player.rect.move_ip(int((self.surface_width / 2) - (self.player.get_width() / 2)), int(self.surface_height - self.player.get_height()))
         self.sprites.add(self.player)
@@ -71,6 +71,19 @@ class Game:
         self.score += amount
         self.level = (self.score // 50) + 1
 
+    def new_life(self):
+        self.player.kill()
+        self.lives -= 1
+        self.planes.empty()
+        self.snakes.empty()
+        self.icecreams.empty()
+        self.sprites.empty()
+        self.player = Player(self.screen, "./assets/budgie.bmp", 0.25, 1, self.add_icecream, self.new_life)
+        self.player.set_limits(self.surface_width, self.surface_height)
+        self.player.rect.move_ip(int((self.surface_width / 2) - (self.player.get_width() / 2)),
+                                 int(self.surface_height - self.player.get_height()))
+        self.sprites.add(self.player)
+
     def draw_status(self):
         self.stats_surface.fill((0, 0, 0))
         self.stats_surface.blit(self.game_title, (20, 25))
@@ -78,6 +91,8 @@ class Game:
         self.stats_surface.blit(level_text, (750, 25))
         score_text = self.font.render(f"SCORE: {self.score}", True, (0, 255, 0))
         self.stats_surface.blit(score_text, (self.surface_width - score_text.get_width() - 20, 25))
+        life_text = self.font.render(f"LIVES: {self.lives}", True, (0, 255, 0))
+        self.stats_surface.blit(life_text, (self.surface_width - score_text.get_width() - life_text.get_width() - 40, 25))
 
     def update(self):
         self.screen.fill(Game.BG_COLOR)

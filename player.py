@@ -2,7 +2,7 @@ from beak import *
 
 
 class Player(ScaledSprite):
-    def __init__(self, ctx: pygame.surface, image: str, scale: float, speedfactor: int, on_use_weapon: Callable[[ScaledSprite],[]]):
+    def __init__(self, ctx: pygame.surface, image: str, scale: float, speedfactor: int, on_use_weapon: Callable[[ScaledSprite],[]], on_die: Callable[[],[]]):
         ScaledSprite.__init__(self, ctx, image, scale)
         self.max_y = 0
         self.max_x = 0
@@ -15,6 +15,7 @@ class Player(ScaledSprite):
         self.on_use_weapon = on_use_weapon
         self.dying = False
         self.death_count = 0
+        self.on_die = on_die
 
     def set_limits(self, max_x: int, max_y: int):
         self.max_x = max_x
@@ -38,10 +39,10 @@ class Player(ScaledSprite):
         else:
             self.speedX = 0
             self.death_count += 1
-            if self.death_count < 30:
-                self.image = pygame.transform.rotate(self.image, 3)
-                self.rect.width = self.image.get_width()
-                self.rect.height = self.image.get_height()
-                self.rect.y -= 9
-                self.rect.x -= 10
+            if self.death_count < 60:
+                self.image = pygame.transform.rotozoom(self.image, 8, 2 - (1.01 ** self.death_count))
+            else:
+                self.on_die()
+
+
 
