@@ -9,6 +9,7 @@ class Game:
     BG_COLOR = (10, 20, 127)
     FRAME_RATE = 20
     STATUS_HEIGHT = 100
+    SUPPLY_SIZE = 50  # Quantity of ammo added by a big icecream
 
     def __init__(self):
         pygame.init()
@@ -17,7 +18,7 @@ class Game:
         self.level = 1
         self.score = 0
         self.lives = 4
-        self.ammo = 20
+        self.ammo = 25
         self.targets = 0  # Count targets to determine fair timing for resupply
         self.font = pygame.font.Font('./assets/Goldman-Bold.ttf', 50)
         self.game_title = self.font.render("BUDGIE DEFENDER", True, (0, 255, 0))
@@ -38,7 +39,7 @@ class Game:
         self.explosions = pygame.sprite.Group()
         self.supplies = pygame.sprite.Group()
 
-        self.player = Player(self.screen, "./assets/budgie.bmp", 0.25, 1, self.ammo, self.add_icecream, self.new_life)
+        self.player = Player(self.screen, "./assets/budgie.bmp", 0.25, 1, self.add_icecream, self.new_life)
         self.player.set_limits(self.surface_width, self.surface_height)
         self.player.rect.move_ip(int((self.surface_width / 2) - (self.player.get_width() / 2)), int(self.surface_height - self.player.get_height()))
         self.sprites.add(self.player)
@@ -94,7 +95,7 @@ class Game:
         self.icecreams.empty()
         self.supplies.empty()
         self.sprites.empty()
-        self.player = Player(self.screen, "./assets/budgie.bmp", 0.25, 1, self.ammo, self.add_icecream, self.new_life)
+        self.player = Player(self.screen, "./assets/budgie.bmp", 0.25, 1, self.add_icecream, self.new_life)
         self.player.set_limits(self.surface_width, self.surface_height)
         self.player.rect.move_ip(int((self.surface_width / 2) - (self.player.get_width() / 2)),
                                  int(self.surface_height - self.player.get_height()))
@@ -116,7 +117,7 @@ class Game:
         self.screen.fill(Game.BG_COLOR)
         self.sprites.update()
         # Draw groups in separate batches to guarantee stacking order without performance penalty of OrderedUpdates
-        if self.targets > 5:
+        if self.targets > Game.SUPPLY_SIZE // 4:
             self.targets = 0
             self.add_supplies()
         self.snakes.draw(self.screen)
@@ -164,7 +165,7 @@ class Game:
                         self.player.speedX -= 1
                     if keys[pygame.K_RIGHT]:
                         self.player.speedX += 1
-                    if keys[pygame.K_SPACE]:
+                    if keys[pygame.K_SPACE] and self.ammo > 0:
                         self.player.attacking = True
 
                 elif event.type == pygame.KEYUP:

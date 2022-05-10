@@ -5,7 +5,7 @@ from scaled_sprite import *
 
 class PythonCannon(Weapon):
     def __init__(self, owner: ScaledSprite):
-        super().__init__(owner, -1)
+        super().__init__(owner)
         self.speed = 3  # Higher number is slower firing rate
 
     def use(self, callback: Callable[[Animation], []]):
