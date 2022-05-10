@@ -78,7 +78,7 @@ class Game:
 
     def explode_planes(self, colliders):
         for (icecream, planes) in colliders.items():
-            self.add_drawable(Explosion(self.screen, icecream.rect.x, icecream.rect.y), self.explosions)
+            self.add_drawable(Explosion(self.screen, icecream.rect.x, icecream.rect.y, 2), self.explosions)
             icecream.kill()
             for plane in planes:
                 plane.dying = True
@@ -122,10 +122,11 @@ class Game:
             self.add_supplies()
         self.snakes.draw(self.screen)
         self.planes.draw(self.screen)
+        self.supplies.draw(self.screen)
         self.explosions.draw(self.screen)
         self.screen.blit(self.player.image, self.player.rect)
         self.icecreams.draw(self.screen)
-        self.supplies.draw(self.screen)
+
 
         killer_snake = pygame.sprite.spritecollideany(self.player, self.snakes)
         if killer_snake:
@@ -134,7 +135,7 @@ class Game:
         killer_plane = pygame.sprite.spritecollideany(self.player, self.planes)
         if killer_plane:
             self.player.dying = True
-            self.add_drawable(Explosion(self.screen, killer_plane.rect.centerx, killer_plane.rect.centery), self.explosions)
+            self.add_drawable(Explosion(self.screen, killer_plane.rect.centerx, killer_plane.rect.centery, 1), self.explosions)
             killer_plane.kill()
 
         colliders = pygame.sprite.groupcollide(self.icecreams, self.planes, False, False)
@@ -147,6 +148,12 @@ class Game:
         if new_ammo:
             self.ammo += 50
             new_ammo.kill()
+        destroyed_supplies = pygame.sprite.groupcollide(self.supplies, self.icecreams, False, True)
+        if destroyed_supplies:
+            for supply in destroyed_supplies:
+                big_explosion = Explosion(self.screen, supply.rect.centerx, supply.rect.centery, 3)
+                self.add_drawable(big_explosion, self.explosions)
+                supply.kill()
 
         self.main_surface.blit(pygame.transform.smoothscale(self.screen, (self.surface_width, self.surface_height)), (0, 0))
 
@@ -165,7 +172,7 @@ class Game:
                         self.player.speedX -= 1
                     if keys[pygame.K_RIGHT]:
                         self.player.speedX += 1
-                    if keys[pygame.K_SPACE] and self.ammo > 0:
+                    if keys[pygame.K_SPACE]:
                         self.player.attacking = True
 
                 elif event.type == pygame.KEYUP:
@@ -181,6 +188,8 @@ class Game:
                             self.add_plane()
                             self.plane_req_count = 0
 
+                if self.ammo < 1:
+                    self.player.attacking = False
             self.update()
             pygame.display.update()
             self.clock.tick(Game.FRAME_RATE)
