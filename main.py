@@ -2,6 +2,7 @@ import pygame.sprite
 from player import *
 from airplane import *
 from explosion import *
+from supply import *
 
 
 class Game:
@@ -16,6 +17,8 @@ class Game:
         self.level = 1
         self.score = 0
         self.lives = 4
+        self.ammo = 20
+        self.targets = 0  # Count targets to determine fair timing for resupply
         self.font = pygame.font.Font('./assets/Goldman-Bold.ttf', 50)
         self.game_title = self.font.render("BUDGIE DEFENDER", True, (0, 255, 0))
         self.clock = pygame.time.Clock()
@@ -33,8 +36,9 @@ class Game:
         self.icecreams = pygame.sprite.Group()
         self.planes = pygame.sprite.Group()
         self.explosions = pygame.sprite.Group()
+        self.supplies = pygame.sprite.Group()
 
-        self.player = Player(self.screen, "./assets/budgie.bmp", 0.25, 1, self.add_icecream, self.new_life)
+        self.player = Player(self.screen, "./assets/budgie.bmp", 0.25, 1, self.ammo, self.add_icecream, self.new_life)
         self.player.set_limits(self.surface_width, self.surface_height)
         self.player.rect.move_ip(int((self.surface_width / 2) - (self.player.get_width() / 2)), int(self.surface_height - self.player.get_height()))
         self.sprites.add(self.player)
@@ -46,15 +50,26 @@ class Game:
         pygame.time.set_timer(self.new_plane_event, 300)
         self.plane_req_count = 0
 
+
+
+
     def add_plane(self):
         self.add_drawable(Airplane(self.screen, random.randint(self.player.get_width(), self.surface_width-self.player.get_width()), self.screen_height, self.add_snake, self.increment_score), self.planes)
+        self.targets += 1
+
+    def add_supplies(self):
+        self.add_drawable(
+            Supply(self.screen, random.randint(self.player.get_width(), self.surface_width - self.player.get_width()),
+                     self.screen_height), self.supplies)
 
     def add_icecream(self, drawable: ScaledSprite):
         self.sprites.add(drawable)
         self.icecreams.add(drawable)
+        self.ammo -= 1
 
     def add_snake(self, drawable: Animation):
         self.add_drawable(drawable, self.snakes)
+        self.targets += 1
 
     def add_drawable(self, drawable: Drawable, group: pygame.sprite.Group):
         self.sprites.add(drawable)
@@ -77,8 +92,9 @@ class Game:
         self.planes.empty()
         self.snakes.empty()
         self.icecreams.empty()
+        self.supplies.empty()
         self.sprites.empty()
-        self.player = Player(self.screen, "./assets/budgie.bmp", 0.25, 1, self.add_icecream, self.new_life)
+        self.player = Player(self.screen, "./assets/budgie.bmp", 0.25, 1, self.ammo, self.add_icecream, self.new_life)
         self.player.set_limits(self.surface_width, self.surface_height)
         self.player.rect.move_ip(int((self.surface_width / 2) - (self.player.get_width() / 2)),
                                  int(self.surface_height - self.player.get_height()))
@@ -93,19 +109,32 @@ class Game:
         self.stats_surface.blit(score_text, (self.surface_width - score_text.get_width() - 20, 25))
         life_text = self.font.render(f"LIVES: {self.lives}", True, (0, 255, 0))
         self.stats_surface.blit(life_text, (self.surface_width - score_text.get_width() - life_text.get_width() - 40, 25))
+        ammo_text = self.font.render(f"AMMO: {self.ammo}", True, (0, 255, 0))
+        self.stats_surface.blit(ammo_text, (self.surface_width - score_text.get_width() - life_text.get_width() - ammo_text.get_width() - 60, 25))
 
     def update(self):
         self.screen.fill(Game.BG_COLOR)
         self.sprites.update()
         # Draw groups in separate batches to guarantee stacking order without performance penalty of OrderedUpdates
+        if self.targets > 5:
+            self.targets = 0
+            self.add_supplies()
         self.snakes.draw(self.screen)
         self.planes.draw(self.screen)
         self.explosions.draw(self.screen)
         self.screen.blit(self.player.image, self.player.rect)
         self.icecreams.draw(self.screen)
+        self.supplies.draw(self.screen)
 
-        if pygame.sprite.spritecollideany(self.player, self.snakes):
+        killer_snake = pygame.sprite.spritecollideany(self.player, self.snakes)
+        if killer_snake:
             self.player.dying = True
+            killer_snake.kill()  # Remove snake that killed the budgie without awarding a point
+        killer_plane = pygame.sprite.spritecollideany(self.player, self.planes)
+        if killer_plane:
+            self.player.dying = True
+            self.add_drawable(Explosion(self.screen, killer_plane.rect.centerx, killer_plane.rect.centery), self.explosions)
+            killer_plane.kill()
 
         colliders = pygame.sprite.groupcollide(self.icecreams, self.planes, False, False)
         if colliders:
@@ -113,6 +142,10 @@ class Game:
         dead_snakes = pygame.sprite.groupcollide(self.icecreams, self.snakes, True, True)
         if dead_snakes:
             self.increment_score(1)
+        new_ammo = pygame.sprite.spritecollideany(self.player, self.supplies)
+        if new_ammo:
+            self.ammo += 50
+            new_ammo.kill()
 
         self.main_surface.blit(pygame.transform.smoothscale(self.screen, (self.surface_width, self.surface_height)), (0, 0))
 

@@ -6,7 +6,7 @@ import random
 
 class Airplane(ScaledSprite, Mortal):
     WIDTH = 210
-    ATTACK_RATE = 120
+    ATTACK_RATE = 300 #Higher number results in less frequent snake launches
     SPEED = 2
 
     def __init__(self, ctx: pygame.surface, x: int, max_y: int, register_ammo: Callable[[Animation], []], update_score: Callable[[int], []]):
