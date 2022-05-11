@@ -1,4 +1,8 @@
 import pygame.mixer
+<<<<<<< HEAD
+=======
+from pygame import mixer
+>>>>>>> origin/master
 
 class Sounds:
     def __init__(self):
