@@ -169,6 +169,7 @@ class Game:
             self.increment_score(1)
         new_ammo = pygame.sprite.spritecollideany(self.player, self.supplies)
         if new_ammo:
+            self.sounds.take_supplies.play()
             self.ammo += 50
             new_ammo.kill()
         destroyed_supplies = pygame.sprite.groupcollide(self.supplies, self.icecreams, False, True)
