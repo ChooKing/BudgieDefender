@@ -3,6 +3,7 @@ from player import *
 from airplane import *
 from explosion import *
 from supply import *
+from sounds import *
 
 
 class Game:
@@ -15,6 +16,7 @@ class Game:
         pygame.init()
         pygame.display.set_caption("Budgie Defender")
         pygame.key.set_repeat(1, 10)
+        self.sounds = Sounds()
         self.level = 1
         self.score = 0
         self.lives = 4
@@ -95,6 +97,8 @@ class Game:
             self.add_drawable(Explosion(self.screen, x, y, exploder.explosion_size), self.explosions)
             if isinstance(exploder, Mortal):
                 exploder.dying = True
+                if isinstance(exploder, Airplane):
+                    self.sounds.small_explosion.play()
             elif isinstance(exploder, Supply):
                 exploder.kill()
 
@@ -111,7 +115,9 @@ class Game:
         self.snakes.empty()
         self.icecreams.empty()
         self.supplies.empty()
+        self.explosions.empty()
         self.sprites.empty()
+
         self.player = Player(self.screen, "./assets/budgie.bmp", 0.25, 1, self.add_icecream, self.new_life)
         self.player.set_limits(self.surface_width, self.surface_height)
         self.player.rect.move_ip(int((self.surface_width / 2) - (self.player.get_width() / 2)),
