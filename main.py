@@ -102,6 +102,7 @@ class Game:
                     self.sounds.small_explosion.play()
             elif isinstance(exploder, Supply):
                 exploder.kill()
+                self.sounds.big_explosion.play()
 
 
 
