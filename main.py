@@ -32,6 +32,8 @@ class Game:
         self.screen.fill(Game.BG_COLOR)
         self.stats_surface = pygame.Surface((self.screen_width, Game.STATUS_HEIGHT))
 
+        self.background = pygame.image.load("./assets/background.bmp").convert(self.screen)
+        self.background = pygame.transform.smoothscale(self.background, (self.screen_width, self.screen_height))
         self.sprites = pygame.sprite.Group()  #Used only to batch update but not draw
         self.snakes = pygame.sprite.Group()
         self.icecreams = pygame.sprite.Group()
@@ -114,7 +116,8 @@ class Game:
         self.stats_surface.blit(ammo_text, (self.surface_width - score_text.get_width() - life_text.get_width() - ammo_text.get_width() - 60, 25))
 
     def update(self):
-        self.screen.fill(Game.BG_COLOR)
+        #self.screen.fill(Game.BG_COLOR)
+        self.screen.blit(self.background, (0 , 0))
         self.sprites.update()
         # Draw groups in separate batches to guarantee stacking order without performance penalty of OrderedUpdates
         if self.targets > Game.SUPPLY_SIZE // 4:
