@@ -10,7 +10,7 @@ class Game:
     BG_COLOR = (10, 20, 127)
     FRAME_RATE = 20
     STATUS_HEIGHT = 100
-    SUPPLY_SIZE = 50  # Quantity of ammo added by a big icecream
+    SUPPLY_SIZE = 60  # Quantity of ammo added by a big icecream
 
     def __init__(self):
         pygame.init()
@@ -20,7 +20,7 @@ class Game:
         self.level = 1
         self.score = 0
         self.lives = 4
-        self.ammo = 25
+        self.ammo = Game.SUPPLY_SIZE
         self.targets = 0  # Count targets to determine fair timing for resupply
         self.font = pygame.font.Font('./assets/Goldman-Bold.ttf', 50)
         self.game_title = self.font.render("BUDGIE DEFENDER", True, (0, 255, 0))
@@ -36,7 +36,7 @@ class Game:
 
         self.background = pygame.image.load("./assets/background.bmp").convert(self.screen)
         self.background = pygame.transform.smoothscale(self.background, (self.screen_width, self.screen_height))
-        self.sprites = pygame.sprite.Group()  #Used only to batch update but not draw
+        self.sprites = pygame.sprite.Group()  # Used only to batch update but not draw
         self.snakes = pygame.sprite.Group()
         self.icecreams = pygame.sprite.Group()
         self.planes = pygame.sprite.Group()
@@ -48,7 +48,8 @@ class Game:
 
         self.player = Player(self.screen, "./assets/budgie.bmp", 0.25, 1, self.add_icecream, self.new_life)
         self.player.set_limits(self.surface_width, self.surface_height)
-        self.player.rect.move_ip(int((self.surface_width / 2) - (self.player.get_width() / 2)), int(self.surface_height - self.player.get_height()))
+        self.player.rect.move_ip(int((self.surface_width / 2) - (self.player.get_width() / 2)),
+                                 int(self.surface_height - self.player.get_height()))
         self.sprites.add(self.player)
 
         self.main_surface.blit(pygame.transform.scale(self.screen, (self.surface_width, self.surface_height)), (0, 0))
@@ -58,17 +59,16 @@ class Game:
         pygame.time.set_timer(self.new_plane_event, 300)
         self.plane_req_count = 0
 
-
-
-
     def add_plane(self):
-        self.add_drawable(Airplane(self.screen, random.randint(self.player.get_width(), self.surface_width-self.player.get_width()), self.screen_height, self.add_snake, self.increment_score), self.planes)
+        self.add_drawable(
+            Airplane(self.screen, random.randint(self.player.get_width(), self.surface_width - self.player.get_width()),
+                     self.screen_height, self.add_snake, self.increment_score), self.planes)
         self.targets += 1
 
     def add_supplies(self):
         self.add_drawable(
             Supply(self.screen, random.randint(self.player.get_width(), self.surface_width - self.player.get_width()),
-                     self.screen_height), self.supplies)
+                   self.screen_height), self.supplies)
 
     def add_icecream(self, drawable: ScaledSprite):
         self.sprites.add(drawable)
@@ -104,8 +104,6 @@ class Game:
                 exploder.kill()
                 self.sounds.big_explosion.play()
 
-
-
     def increment_score(self, amount: int):
         self.score += amount
         self.level = (self.score // 50) + 1
@@ -134,15 +132,17 @@ class Game:
         score_text = self.font.render(f"SCORE: {self.score}", True, (0, 255, 0))
         self.stats_surface.blit(score_text, (self.surface_width - score_text.get_width() - 20, 25))
         life_text = self.font.render(f"LIVES: {self.lives}", True, (0, 255, 0))
-        self.stats_surface.blit(life_text, (self.surface_width - score_text.get_width() - life_text.get_width() - 40, 25))
+        self.stats_surface.blit(life_text,
+                                (self.surface_width - score_text.get_width() - life_text.get_width() - 40, 25))
         ammo_text = self.font.render(f"AMMO: {self.ammo}", True, (0, 255, 0))
-        self.stats_surface.blit(ammo_text, (self.surface_width - score_text.get_width() - life_text.get_width() - ammo_text.get_width() - 60, 25))
+        self.stats_surface.blit(ammo_text, (
+            self.surface_width - score_text.get_width() - life_text.get_width() - ammo_text.get_width() - 60, 25))
 
     def update(self):
-        self.screen.blit(self.background, (0 , 0))
+        self.screen.blit(self.background, (0, 0))
         self.sprites.update()
         # Draw groups in separate batches to guarantee stacking order without performance penalty of OrderedUpdates
-        if self.targets > Game.SUPPLY_SIZE // 4:
+        if self.targets > Game.SUPPLY_SIZE // 3:
             self.targets = 0
             self.add_supplies()
         self.snakes.draw(self.screen)
@@ -152,7 +152,6 @@ class Game:
         self.screen.blit(self.player.image, self.player.rect)
         self.icecreams.draw(self.screen)
 
-
         killer_snake = pygame.sprite.spritecollideany(self.player, self.snakes)
         if killer_snake:
             self.player.dying = True
@@ -160,7 +159,8 @@ class Game:
         killer_plane = pygame.sprite.spritecollideany(self.player, self.planes)
         if killer_plane:
             self.player.dying = True
-            self.add_drawable(Explosion(self.screen, killer_plane.rect.centerx, killer_plane.rect.centery, 1), self.explosions)
+            self.add_drawable(Explosion(self.screen, killer_plane.rect.centerx, killer_plane.rect.centery, 1),
+                              self.explosions)
             killer_plane.kill()
 
         colliders = pygame.sprite.groupcollide(self.icecreams, self.planes, False, False)
@@ -171,8 +171,9 @@ class Game:
             self.increment_score(1)
         new_ammo = pygame.sprite.spritecollideany(self.player, self.supplies)
         if new_ammo:
+            self.add_supplies()
             self.sounds.take_supplies.play()
-            self.ammo += 50
+            self.ammo += Game.SUPPLY_SIZE
             new_ammo.kill()
         destroyed_supplies = pygame.sprite.groupcollide(self.supplies, self.icecreams, False, True)
         if destroyed_supplies:
@@ -191,7 +192,8 @@ class Game:
                     if isinstance(exploder, Airplane):
                         self.score += 5
 
-        self.main_surface.blit(pygame.transform.smoothscale(self.screen, (self.surface_width, self.surface_height)), (0, 0))
+        self.main_surface.blit(pygame.transform.smoothscale(self.screen, (self.surface_width, self.surface_height)),
+                               (0, 0))
 
         self.draw_status()
         self.main_surface.blit(self.stats_surface, (0, self.surface_height))
