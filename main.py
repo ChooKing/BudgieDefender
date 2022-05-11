@@ -74,6 +74,7 @@ class Game:
         self.sprites.add(drawable)
         self.icecreams.add(drawable)
         self.ammo -= 1
+        self.sounds.shoot.play()
 
     def add_snake(self, drawable: Animation):
         self.add_drawable(drawable, self.snakes)
