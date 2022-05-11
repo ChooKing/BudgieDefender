@@ -14,3 +14,5 @@ class Snake(Animation):
         self.rect.y += Snake.SPEED
         super().update()
 
+
+

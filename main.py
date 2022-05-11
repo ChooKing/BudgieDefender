@@ -40,6 +40,9 @@ class Game:
         self.planes = pygame.sprite.Group()
         self.explosions = pygame.sprite.Group()
         self.supplies = pygame.sprite.Group()
+        self.exploded = pygame.sprite.Group()  # Record exploded items to avoid double exploding same item
+
+        self.nonexplosions = pygame.sprite.Group()
 
         self.player = Player(self.screen, "./assets/budgie.bmp", 0.25, 1, self.add_icecream, self.new_life)
         self.player.set_limits(self.surface_width, self.surface_height)
@@ -76,14 +79,26 @@ class Game:
 
     def add_drawable(self, drawable: Drawable, group: pygame.sprite.Group):
         self.sprites.add(drawable)
+        if not isinstance(drawable, Explosion):
+            self.nonexplosions.add(drawable)
         group.add(drawable)
 
     def explode_planes(self, colliders):
         for (icecream, planes) in colliders.items():
-            self.add_drawable(Explosion(self.screen, icecream.rect.x, icecream.rect.y, 2), self.explosions)
-            icecream.kill()
             for plane in planes:
-                plane.dying = True
+                self.explode(plane, icecream.rect.centerx, icecream.rect.y)
+            icecream.kill()
+
+    def explode(self, exploder: pygame.sprite.Sprite, x: int, y: int):
+        self.exploded.add(exploder)
+        if isinstance(exploder, Explodable):
+            self.add_drawable(Explosion(self.screen, x, y, exploder.explosion_size), self.explosions)
+            if isinstance(exploder, Mortal):
+                exploder.dying = True
+            elif isinstance(exploder, Supply):
+                exploder.kill()
+
+
 
     def increment_score(self, amount: int):
         self.score += amount
@@ -116,7 +131,6 @@ class Game:
         self.stats_surface.blit(ammo_text, (self.surface_width - score_text.get_width() - life_text.get_width() - ammo_text.get_width() - 60, 25))
 
     def update(self):
-        #self.screen.fill(Game.BG_COLOR)
         self.screen.blit(self.background, (0 , 0))
         self.sprites.update()
         # Draw groups in separate batches to guarantee stacking order without performance penalty of OrderedUpdates
@@ -154,9 +168,19 @@ class Game:
         destroyed_supplies = pygame.sprite.groupcollide(self.supplies, self.icecreams, False, True)
         if destroyed_supplies:
             for supply in destroyed_supplies:
-                big_explosion = Explosion(self.screen, supply.rect.centerx, supply.rect.centery, 3)
-                self.add_drawable(big_explosion, self.explosions)
+                self.explode(supply, supply.rect.centerx, supply.rect.centery)
                 supply.kill()
+        cascade_exploders = pygame.sprite.groupcollide(self.nonexplosions, self.explosions, False, False)
+        if cascade_exploders:
+            for exploder in cascade_exploders:
+                if isinstance(exploder, Snake):
+                    self.score += 1
+                    exploder.kill()
+                elif not self.exploded.has(exploder):
+                    self.exploded.add(exploder)
+                    self.explode(exploder, exploder.rect.centerx, exploder.rect.centery)
+                    if isinstance(exploder, Airplane):
+                        self.score += 5
 
         self.main_surface.blit(pygame.transform.smoothscale(self.screen, (self.surface_width, self.surface_height)), (0, 0))
 
