@@ -36,6 +36,7 @@ class Game:
         self.font = pygame.font.Font('./assets/Goldman-Bold.ttf', 50)
         self.bigfont = pygame.font.Font('./assets/Goldman-Bold.ttf', 150)
         self.game_title = self.font.render("BUDGIE DEFENDER", True, (0, 255, 0))
+        self.game_over = self.bigfont.render("GAME OVER", True, (255, 0, 0))
         self.clock = pygame.time.Clock()
         self.screen_width = pygame.display.Info().current_w
         self.screen_height = pygame.display.Info().current_h - 100
@@ -216,8 +217,8 @@ class Game:
         elif self.state == GameState.PAUSE:
             pass
         elif self.state == GameState.OVER:
-            game_over = self.bigfont.render("GAME OVER", True, (255, 0, 0))
-            self.main_surface.blit(game_over, (self.main_surface.get_rect().centerx - game_over.get_width()//2, self.main_surface.get_rect().centery - game_over.get_height()//2 - Game.STATUS_HEIGHT))
+
+            self.main_surface.blit(self.game_over, (self.main_surface.get_rect().centerx - self.game_over.get_width()//2, self.main_surface.get_rect().centery - self.game_over.get_height()//2 - Game.STATUS_HEIGHT))
 
     def run(self):
         while True:
