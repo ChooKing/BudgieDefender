@@ -24,7 +24,7 @@ class Game:
     BG_COLOR = (10, 20, 127)
     FRAME_RATE = 20
     STATUS_HEIGHT = 100
-    SUPPLY_SIZE = 60  # Quantity of ammo added by a big icecream
+    SUPPLY_SIZE = 50  # Quantity of ammo added by a big icecream
 
     def __init__(self):
         pygame.init()
@@ -102,8 +102,9 @@ class Game:
     def add_plane(self):
         self.add_drawable(
             Airplane(self.screen, random.randint(self.player.get_width(), self.surface_width - self.player.get_width()),
-                     self.screen_height, self.add_snake, self.increment_score), self.planes)
+                     self.screen_height, self.level * 2, self.add_snake, self.increment_score), self.planes)
         self.targets += 1
+
 
     def add_supplies(self):
         self.add_drawable(
@@ -146,7 +147,7 @@ class Game:
 
     def increment_score(self, amount: int):
         self.score += amount
-        self.level = (self.score // 50) + 1
+        self.level = (self.score // 100) + 1
 
     def new_life(self):
         self.player.kill()
@@ -195,7 +196,7 @@ class Game:
             self.screen.blit(self.background, (0, 0))
             self.sprites.update()
             # Draw groups in separate batches to guarantee stacking order without performance penalty of OrderedUpdates
-            if self.targets > Game.SUPPLY_SIZE // 3:
+            if self.targets > Game.SUPPLY_SIZE // 2:
                 self.targets = 0
                 self.add_supplies()
             self.snakes.draw(self.screen)

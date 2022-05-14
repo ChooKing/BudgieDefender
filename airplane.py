@@ -7,18 +7,17 @@ import random
 class Airplane(ScaledSprite, Mortal, Explodable):
     WIDTH = 210
     ATTACK_RATE = 300 #Higher number results in less frequent snake launches
-    SPEED = 2
 
-
-    def __init__(self, ctx: pygame.surface, x: int, max_y: int, register_ammo: Callable[[Animation], []], update_score: Callable[[int], []]):
+    def __init__(self, ctx: pygame.surface, x: int, max_y: int, speed: int, register_ammo: Callable[[Animation], []], update_score: Callable[[int], []]):
         ScaledSprite.__init__(self, ctx, './assets/airplane.bmp', 0.5)
         Mortal.__init__(self, 6, False)
         Explodable.__init__(self, 0.5)
         self.rect.x = x
         self.max_y = max_y
+        self.speed = speed
         self.exploding = False
         self.explosion_counter = 0
-        self.weapon = PythonCannon(self)
+        self.weapon = PythonCannon(self, speed + 1)
         self.register_ammo = register_ammo
         self.update_score = update_score
 
@@ -30,7 +29,7 @@ class Airplane(ScaledSprite, Mortal, Explodable):
             self.kill()
 
         else:
-            self.rect.y += Airplane.SPEED
+            self.rect.y += self.speed
             if self.rect.y + self.rect.height > self.max_y:
                 self.kill()
 
