@@ -33,10 +33,6 @@ class Game:
         self.lives = 4
         self.ammo = Game.SUPPLY_SIZE
         self.targets = 0  # Count targets to determine fair timing for resupply
-        self.font = pygame.font.Font('./assets/Goldman-Bold.ttf', 50)
-        self.bigfont = pygame.font.Font('./assets/Goldman-Bold.ttf', 150)
-        self.game_title = self.font.render("BUDGIE DEFENDER", True, (0, 255, 0))
-        self.game_over = self.bigfont.render("GAME OVER", True, (255, 0, 0))
         self.clock = pygame.time.Clock()
         self.screen_width = pygame.display.Info().current_w
         self.screen_height = pygame.display.Info().current_h - 100
@@ -46,6 +42,15 @@ class Game:
         self.screen = pygame.Surface((self.surface_width, self.surface_height))
         self.screen.fill(Game.BG_COLOR)
         self.stats_surface = pygame.Surface((self.screen_width, Game.STATUS_HEIGHT))
+        self.font = pygame.font.Font('./assets/Goldman-Bold.ttf', 50)
+        self.bigfont = pygame.font.Font('./assets/Goldman-Bold.ttf', 150)
+        self.game_title = self.font.render("BUDGIE DEFENDER", True, (0, 255, 0))
+        self.game_over = self.bigfont.render("GAME OVER", True, (255, 0, 0))
+        self.play_again = self.font.render("PLAY AGAIN", True, (0, 255, 0))
+        self.play_again_rect = pygame.rect.Rect(self.main_surface.get_rect().centerx - self.play_again.get_width() // 2,
+                                                self.main_surface.get_rect().centery - self.play_again.get_height() // 2
+                                                - Game.STATUS_HEIGHT + 95,
+                                                self.play_again.get_width(), self.play_again.get_height())
 
         self.background = pygame.image.load("./assets/background.bmp").convert(self.screen)
         self.background = pygame.transform.smoothscale(self.background, (self.screen_width, self.screen_height))
@@ -140,6 +145,15 @@ class Game:
         else:
             self.state = GameState.OVER
 
+    def new_game(self):
+        self.lives = 5  # new_life() decrements life by one
+        self.score = 0
+        self.level = 1
+        self.ammo = Game.SUPPLY_SIZE
+        self.targets = 0
+        self.new_life()
+        self.state = GameState.PLAY
+
     def draw_status(self):
         self.stats_surface.fill((0, 0, 0))
         self.stats_surface.blit(self.game_title, (20, 25))
@@ -217,8 +231,10 @@ class Game:
         elif self.state == GameState.PAUSE:
             pass
         elif self.state == GameState.OVER:
-
-            self.main_surface.blit(self.game_over, (self.main_surface.get_rect().centerx - self.game_over.get_width()//2, self.main_surface.get_rect().centery - self.game_over.get_height()//2 - Game.STATUS_HEIGHT))
+            self.main_surface.blit(self.game_over, (
+                self.main_surface.get_rect().centerx - self.game_over.get_width() // 2,
+                self.main_surface.get_rect().centery - self.game_over.get_height() // 2 - Game.STATUS_HEIGHT))
+            self.main_surface.blit(self.play_again, self.play_again_rect)
 
     def run(self):
         while True:
@@ -249,6 +265,12 @@ class Game:
                         self.player.speedX = 0
                     if event.key == pygame.K_SPACE:
                         self.player.attacking = False
+
+                elif event.type == pygame.MOUSEBUTTONDOWN and self.state == GameState.OVER:
+                    x, y = pygame.mouse.get_pos()
+                    if self.play_again_rect.x <= x <= self.play_again_rect.x + self.play_again_rect.width and \
+                            self.play_again_rect.y <= y <= self.play_again_rect.y + self.play_again_rect.height:
+                        self.new_game()
 
                 elif event.type == self.new_plane_event:
                     if not self.player.dying:
