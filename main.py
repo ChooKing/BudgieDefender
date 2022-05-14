@@ -7,6 +7,10 @@ from sounds import *
 from enum import Enum
 
 
+def in_rect(x: int, y: int, r: pygame.Rect):
+    return r.x <= x <= r.x + r.width and r.y <= y <= r.y + r.height
+
+
 class GameState(Enum):
     INTRO = 0
     HELP = 1
@@ -30,7 +34,7 @@ class Game:
         self.sounds = Sounds()
         self.level = 1
         self.score = 0
-        self.lives = 4
+        self.lives = 1
         self.ammo = Game.SUPPLY_SIZE
         self.targets = 0  # Count targets to determine fair timing for resupply
         self.clock = pygame.time.Clock()
@@ -47,11 +51,15 @@ class Game:
         self.game_title = self.font.render("BUDGIE DEFENDER", True, (0, 255, 0))
         self.game_over = self.bigfont.render("GAME OVER", True, (255, 0, 0))
         self.play_again = self.font.render("PLAY AGAIN", True, (0, 255, 0))
-        self.play_again_rect = pygame.rect.Rect(self.main_surface.get_rect().centerx - self.play_again.get_width() // 2,
-                                                self.main_surface.get_rect().centery - self.play_again.get_height() // 2
-                                                - Game.STATUS_HEIGHT + 95,
-                                                self.play_again.get_width(), self.play_again.get_height())
-
+        self.play_again_rect = pygame.Rect(self.main_surface.get_rect().centerx - self.play_again.get_width() // 2,
+                                           self.main_surface.get_rect().centery - self.play_again.get_height() // 2
+                                           - Game.STATUS_HEIGHT + 95,
+                                           self.play_again.get_width(), self.play_again.get_height())
+        self.exit = self.font.render("EXIT", True, (0, 255, 0))
+        self.exit_rect = pygame.Rect(self.main_surface.get_rect().centerx - self.exit.get_width() // 2,
+                                           self.main_surface.get_rect().centery - self.exit.get_height() // 2
+                                           - Game.STATUS_HEIGHT + 170,
+                                           self.exit.get_width(), self.exit.get_height())
         self.background = pygame.image.load("./assets/background.bmp").convert(self.screen)
         self.background = pygame.transform.smoothscale(self.background, (self.screen_width, self.screen_height))
         self.sprites = pygame.sprite.Group()  # Used only to batch update but not draw
@@ -235,6 +243,7 @@ class Game:
                 self.main_surface.get_rect().centerx - self.game_over.get_width() // 2,
                 self.main_surface.get_rect().centery - self.game_over.get_height() // 2 - Game.STATUS_HEIGHT))
             self.main_surface.blit(self.play_again, self.play_again_rect)
+            self.main_surface.blit(self.exit, self.exit_rect)
 
     def run(self):
         while True:
@@ -268,9 +277,18 @@ class Game:
 
                 elif event.type == pygame.MOUSEBUTTONDOWN and self.state == GameState.OVER:
                     x, y = pygame.mouse.get_pos()
-                    if self.play_again_rect.x <= x <= self.play_again_rect.x + self.play_again_rect.width and \
-                            self.play_again_rect.y <= y <= self.play_again_rect.y + self.play_again_rect.height:
+                    if in_rect(x, y, self.play_again_rect):
                         self.new_game()
+                    elif in_rect(x, y, self.exit_rect):
+                        pygame.quit()
+                        quit()
+
+                elif event.type == pygame.MOUSEMOTION and self.state == GameState.OVER:
+                    x, y = pygame.mouse.get_pos()
+                    if in_rect(x, y, self.play_again_rect) or in_rect(x, y, self.exit_rect):
+                        pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
+                    else:
+                        pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
 
                 elif event.type == self.new_plane_event:
                     if not self.player.dying:
