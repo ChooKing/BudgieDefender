@@ -34,7 +34,7 @@ class Game:
         self.sounds = Sounds()
         self.level = 1
         self.score = 0
-        self.lives = 1
+        self.lives = 4
         self.ammo = Game.SUPPLY_SIZE
         self.targets = 0  # Count targets to determine fair timing for resupply
         self.clock = pygame.time.Clock()
@@ -60,6 +60,20 @@ class Game:
                                            self.main_surface.get_rect().centery - self.exit.get_height() // 2
                                            - Game.STATUS_HEIGHT + 170,
                                            self.exit.get_width(), self.exit.get_height())
+        self.quit_prompt = self.bigfont.render("QUIT GAME?", True, (255, 0, 0))
+        self.quit_text = self.font.render("QUIT", True, (0, 255, 0))
+        self.continue_text = self.font.render("CONTINUE", True, (0, 255, 0))
+        self.quit_text_rect = pygame.Rect(self.main_surface.get_rect().centerx - 35 -
+                                          ((self.quit_text.get_width() + self.continue_text.get_width()) // 2),
+                                           self.main_surface.get_rect().centery - self.quit_text.get_height() // 2
+                                           - Game.STATUS_HEIGHT + 95,
+                                           self.quit_text.get_width(), self.quit_text.get_height())
+        self.continue_text_rect = pygame.Rect(self.main_surface.get_rect().centerx + 35 +
+                                              ((self.quit_text.get_width() + self.continue_text.get_width()) // 2) -
+                                              self.continue_text.get_width(),
+                                           self.main_surface.get_rect().centery - self.quit_text.get_height() // 2
+                                           - Game.STATUS_HEIGHT + 95,
+                                           self.continue_text.get_width(), self.continue_text.get_height())
         self.background = pygame.image.load("./assets/background.bmp").convert(self.screen)
         self.background = pygame.transform.smoothscale(self.background, (self.screen_width, self.screen_height))
         self.sprites = pygame.sprite.Group()  # Used only to batch update but not draw
@@ -238,6 +252,12 @@ class Game:
             self.main_surface.blit(self.stats_surface, (0, self.surface_height))
         elif self.state == GameState.PAUSE:
             pass
+        elif self.state == GameState.QUIT:
+            self.main_surface.blit(self.quit_prompt, (
+                self.main_surface.get_rect().centerx - self.quit_prompt.get_width() // 2,
+                self.main_surface.get_rect().centery - self.quit_prompt.get_height() // 2 - Game.STATUS_HEIGHT))
+            self.main_surface.blit(self.quit_text, self.quit_text_rect)
+            self.main_surface.blit(self.continue_text, self.continue_text_rect)
         elif self.state == GameState.OVER:
             self.main_surface.blit(self.game_over, (
                 self.main_surface.get_rect().centerx - self.game_over.get_width() // 2,
@@ -260,6 +280,8 @@ class Game:
                             self.state = GameState.PLAY
                             pygame.key.set_repeat(150, 10)
                         pygame.event.clear(eventtype=[pygame.KEYDOWN, pygame.KEYUP])
+                    elif event.key == pygame.K_q:
+                        self.state = GameState.QUIT
                     else:
                         keys = pygame.key.get_pressed()
                         if keys[pygame.K_LEFT]:
@@ -275,20 +297,33 @@ class Game:
                     if event.key == pygame.K_SPACE:
                         self.player.attacking = False
 
-                elif event.type == pygame.MOUSEBUTTONDOWN and self.state == GameState.OVER:
+                elif event.type == pygame.MOUSEBUTTONDOWN:
                     x, y = pygame.mouse.get_pos()
-                    if in_rect(x, y, self.play_again_rect):
-                        self.new_game()
-                    elif in_rect(x, y, self.exit_rect):
-                        pygame.quit()
-                        quit()
+                    if self.state == GameState.OVER:
+                        if in_rect(x, y, self.play_again_rect):
+                            self.new_game()
+                        elif in_rect(x, y, self.exit_rect):
+                            pygame.quit()
+                            quit()
+                    elif self.state == GameState.QUIT:
+                        if in_rect(x, y, self.quit_text_rect):
+                            pygame.quit()
+                            quit()
+                        elif in_rect(x, y, self.continue_text_rect):
+                            self.state = GameState.PLAY
 
-                elif event.type == pygame.MOUSEMOTION and self.state == GameState.OVER:
+                elif event.type == pygame.MOUSEMOTION:
                     x, y = pygame.mouse.get_pos()
-                    if in_rect(x, y, self.play_again_rect) or in_rect(x, y, self.exit_rect):
-                        pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
-                    else:
-                        pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+                    if self.state == GameState.OVER:
+                        if in_rect(x, y, self.play_again_rect) or in_rect(x, y, self.exit_rect):
+                            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
+                        else:
+                            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
+                    elif self.state == GameState.QUIT:
+                        if in_rect(x, y, self.quit_text_rect) or in_rect(x, y, self.continue_text_rect):
+                            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_HAND)
+                        else:
+                            pygame.mouse.set_cursor(pygame.SYSTEM_CURSOR_ARROW)
 
                 elif event.type == self.new_plane_event:
                     if not self.player.dying:
