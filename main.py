@@ -4,6 +4,16 @@ from airplane import *
 from explosion import *
 from supply import *
 from sounds import *
+from enum import Enum
+
+
+class GameState(Enum):
+    INTRO = 0
+    HELP = 1
+    PLAY = 2
+    PAUSE = 3
+    QUIT = 4
+    OVER = 5
 
 
 class Game:
@@ -15,7 +25,8 @@ class Game:
     def __init__(self):
         pygame.init()
         pygame.display.set_caption("Budgie Defender")
-        pygame.key.set_repeat(1, 10)
+        pygame.key.set_repeat(150, 10)
+        self.state = GameState.PLAY
         self.sounds = Sounds()
         self.level = 1
         self.score = 0
@@ -139,64 +150,68 @@ class Game:
             self.surface_width - score_text.get_width() - life_text.get_width() - ammo_text.get_width() - 60, 25))
 
     def update(self):
-        self.screen.blit(self.background, (0, 0))
-        self.sprites.update()
-        # Draw groups in separate batches to guarantee stacking order without performance penalty of OrderedUpdates
-        if self.targets > Game.SUPPLY_SIZE // 3:
-            self.targets = 0
-            self.add_supplies()
-        self.snakes.draw(self.screen)
-        self.planes.draw(self.screen)
-        self.supplies.draw(self.screen)
-        self.explosions.draw(self.screen)
-        self.screen.blit(self.player.image, self.player.rect)
-        self.icecreams.draw(self.screen)
+        if self.state == GameState.PLAY:
+            self.screen.blit(self.background, (0, 0))
+            self.sprites.update()
+            # Draw groups in separate batches to guarantee stacking order without performance penalty of OrderedUpdates
+            if self.targets > Game.SUPPLY_SIZE // 3:
+                self.targets = 0
+                self.add_supplies()
+            self.snakes.draw(self.screen)
+            self.planes.draw(self.screen)
+            self.supplies.draw(self.screen)
+            self.explosions.draw(self.screen)
+            self.screen.blit(self.player.image, self.player.rect)
+            self.icecreams.draw(self.screen)
 
-        killer_snake = pygame.sprite.spritecollideany(self.player, self.snakes)
-        if killer_snake:
-            self.player.dying = True
-            killer_snake.kill()  # Remove snake that killed the budgie without awarding a point
-        killer_plane = pygame.sprite.spritecollideany(self.player, self.planes)
-        if killer_plane:
-            self.player.dying = True
-            self.add_drawable(Explosion(self.screen, killer_plane.rect.centerx, killer_plane.rect.centery, 1),
-                              self.explosions)
-            killer_plane.kill()
+            killer_snake = pygame.sprite.spritecollideany(self.player, self.snakes)
+            if killer_snake:
+                self.player.dying = True
+                killer_snake.kill()  # Remove snake that killed the budgie without awarding a point
+            killer_plane = pygame.sprite.spritecollideany(self.player, self.planes)
+            if killer_plane:
+                self.player.dying = True
+                self.add_drawable(Explosion(self.screen, killer_plane.rect.centerx, killer_plane.rect.centery, 1),
+                                  self.explosions)
+                killer_plane.kill()
 
-        colliders = pygame.sprite.groupcollide(self.icecreams, self.planes, False, False)
-        if colliders:
-            self.explode_planes(colliders)
-        dead_snakes = pygame.sprite.groupcollide(self.icecreams, self.snakes, True, True)
-        if dead_snakes:
-            self.increment_score(1)
-        new_ammo = pygame.sprite.spritecollideany(self.player, self.supplies)
-        if new_ammo:
-            self.add_supplies()
-            self.sounds.take_supplies.play()
-            self.ammo += Game.SUPPLY_SIZE
-            new_ammo.kill()
-        destroyed_supplies = pygame.sprite.groupcollide(self.supplies, self.icecreams, False, True)
-        if destroyed_supplies:
-            for supply in destroyed_supplies:
-                self.explode(supply, supply.rect.centerx, supply.rect.centery)
-                supply.kill()
-        cascade_exploders = pygame.sprite.groupcollide(self.nonexplosions, self.explosions, False, False)
-        if cascade_exploders:
-            for exploder in cascade_exploders:
-                if isinstance(exploder, Snake):
-                    self.score += 1
-                    exploder.kill()
-                elif not self.exploded.has(exploder):
-                    self.exploded.add(exploder)
-                    self.explode(exploder, exploder.rect.centerx, exploder.rect.centery)
-                    if isinstance(exploder, Airplane):
-                        self.score += 5
+            colliders = pygame.sprite.groupcollide(self.icecreams, self.planes, False, False)
+            if colliders:
+                self.explode_planes(colliders)
+            dead_snakes = pygame.sprite.groupcollide(self.icecreams, self.snakes, True, True)
+            if dead_snakes:
+                self.increment_score(1)
+            new_ammo = pygame.sprite.spritecollideany(self.player, self.supplies)
+            if new_ammo:
+                self.add_supplies()
+                self.sounds.take_supplies.play()
+                self.ammo += Game.SUPPLY_SIZE
+                new_ammo.kill()
+            destroyed_supplies = pygame.sprite.groupcollide(self.supplies, self.icecreams, False, True)
+            if destroyed_supplies:
+                for supply in destroyed_supplies:
+                    self.explode(supply, supply.rect.centerx, supply.rect.centery)
+                    supply.kill()
+            cascade_exploders = pygame.sprite.groupcollide(self.nonexplosions, self.explosions, False, False)
+            if cascade_exploders:
+                for exploder in cascade_exploders:
+                    if isinstance(exploder, Snake):
+                        self.score += 1
+                        exploder.kill()
+                    elif not self.exploded.has(exploder):
+                        self.exploded.add(exploder)
+                        self.explode(exploder, exploder.rect.centerx, exploder.rect.centery)
+                        if isinstance(exploder, Airplane):
+                            self.score += 5
 
-        self.main_surface.blit(pygame.transform.smoothscale(self.screen, (self.surface_width, self.surface_height)),
-                               (0, 0))
+            self.main_surface.blit(pygame.transform.smoothscale(self.screen, (self.surface_width, self.surface_height)),
+                                   (0, 0))
 
-        self.draw_status()
-        self.main_surface.blit(self.stats_surface, (0, self.surface_height))
+            self.draw_status()
+            self.main_surface.blit(self.stats_surface, (0, self.surface_height))
+        elif self.state == GameState.PAUSE:
+            pass
+
 
     def run(self):
         while True:
@@ -205,13 +220,22 @@ class Game:
                     pygame.quit()
                     quit()
                 elif event.type == pygame.KEYDOWN:
-                    keys = pygame.key.get_pressed()
-                    if keys[pygame.K_LEFT]:
-                        self.player.speedX -= 1
-                    if keys[pygame.K_RIGHT]:
-                        self.player.speedX += 1
-                    if keys[pygame.K_SPACE]:
-                        self.player.attacking = True
+                    if event.key == pygame.K_p:
+                        if self.state == GameState.PLAY:
+                            self.state = GameState.PAUSE
+                            pygame.key.set_repeat(2000, 2000)
+                        else:
+                            self.state = GameState.PLAY
+                            pygame.key.set_repeat(150, 10)
+                        pygame.event.clear(eventtype=[pygame.KEYDOWN, pygame.KEYUP])
+                    else:
+                        keys = pygame.key.get_pressed()
+                        if keys[pygame.K_LEFT]:
+                            self.player.speedX -= 1
+                        if keys[pygame.K_RIGHT]:
+                            self.player.speedX += 1
+                        if keys[pygame.K_SPACE]:
+                            self.player.attacking = True
 
                 elif event.type == pygame.KEYUP:
                     if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
