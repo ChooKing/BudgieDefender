@@ -34,6 +34,7 @@ class Game:
         self.ammo = Game.SUPPLY_SIZE
         self.targets = 0  # Count targets to determine fair timing for resupply
         self.font = pygame.font.Font('./assets/Goldman-Bold.ttf', 50)
+        self.bigfont = pygame.font.Font('./assets/Goldman-Bold.ttf', 150)
         self.game_title = self.font.render("BUDGIE DEFENDER", True, (0, 255, 0))
         self.clock = pygame.time.Clock()
         self.screen_width = pygame.display.Info().current_w
@@ -122,18 +123,21 @@ class Game:
     def new_life(self):
         self.player.kill()
         self.lives -= 1
-        self.planes.empty()
-        self.snakes.empty()
-        self.icecreams.empty()
-        self.supplies.empty()
-        self.explosions.empty()
-        self.sprites.empty()
+        if self.lives > 0:
+            self.planes.empty()
+            self.snakes.empty()
+            self.icecreams.empty()
+            self.supplies.empty()
+            self.explosions.empty()
+            self.sprites.empty()
 
-        self.player = Player(self.screen, "./assets/budgie.bmp", 0.25, 1, self.add_icecream, self.new_life)
-        self.player.set_limits(self.surface_width, self.surface_height)
-        self.player.rect.move_ip(int((self.surface_width / 2) - (self.player.get_width() / 2)),
-                                 int(self.surface_height - self.player.get_height()))
-        self.sprites.add(self.player)
+            self.player = Player(self.screen, "./assets/budgie.bmp", 0.25, 1, self.add_icecream, self.new_life)
+            self.player.set_limits(self.surface_width, self.surface_height)
+            self.player.rect.move_ip(int((self.surface_width / 2) - (self.player.get_width() / 2)),
+                                     int(self.surface_height - self.player.get_height()))
+            self.sprites.add(self.player)
+        else:
+            self.state = GameState.OVER
 
     def draw_status(self):
         self.stats_surface.fill((0, 0, 0))
@@ -211,7 +215,9 @@ class Game:
             self.main_surface.blit(self.stats_surface, (0, self.surface_height))
         elif self.state == GameState.PAUSE:
             pass
-
+        elif self.state == GameState.OVER:
+            game_over = self.bigfont.render("GAME OVER", True, (255, 0, 0))
+            self.main_surface.blit(game_over, (self.main_surface.get_rect().centerx - game_over.get_width()//2, self.main_surface.get_rect().centery - game_over.get_height()//2 - Game.STATUS_HEIGHT))
 
     def run(self):
         while True:
