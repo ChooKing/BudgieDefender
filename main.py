@@ -41,13 +41,16 @@ class Game:
         self.screen_width = pygame.display.Info().current_w
         self.screen_height = pygame.display.Info().current_h - 100
         self.surface_width = self.screen_width
-        self.surface_height = self.screen_height - Game.STATUS_HEIGHT
         self.main_surface = pygame.display.set_mode((self.screen_width, self.screen_height))
+
+        self.scale_factor = 1 if self.screen_width < self.screen_height > 1.8 else 0.5
+        Game.STATUS_HEIGHT = 100 * self.scale_factor
+        self.surface_height = self.screen_height - Game.STATUS_HEIGHT
         self.screen = pygame.Surface((self.surface_width, self.surface_height))
         self.screen.fill(Game.BG_COLOR)
         self.stats_surface = pygame.Surface((self.screen_width, Game.STATUS_HEIGHT))
-        self.font = pygame.font.Font('./assets/Goldman-Bold.ttf', 50)
-        self.bigfont = pygame.font.Font('./assets/Goldman-Bold.ttf', 150)
+        self.font = pygame.font.Font('./assets/Goldman-Bold.ttf', int(50 * self.scale_factor))
+        self.bigfont = pygame.font.Font('./assets/Goldman-Bold.ttf', int(150 * self.scale_factor))
         self.game_title = self.font.render("BUDGIE DEFENDER", True, (0, 255, 0))
         self.game_over = self.bigfont.render("GAME OVER", True, (255, 0, 0))
         self.play_again = self.font.render("PLAY AGAIN", True, (0, 255, 0))
@@ -86,7 +89,7 @@ class Game:
 
         self.nonexplosions = pygame.sprite.Group()
 
-        self.player = Player(self.screen, "./assets/budgie.bmp", 0.25, 1, self.add_icecream, self.new_life)
+        self.player = Player(self.screen, "./assets/budgie.bmp", 0.25 * self.scale_factor, 1, self.add_icecream, self.new_life)
         self.player.set_limits(self.surface_width, self.surface_height)
         self.player.rect.move_ip(int((self.surface_width / 2) - (self.player.get_width() / 2)),
                                  int(self.surface_height - self.player.get_height()))
@@ -101,14 +104,14 @@ class Game:
 
     def add_plane(self):
         self.add_drawable(
-            Airplane(self.screen, random.randint(self.player.get_width(), self.surface_width - self.player.get_width()),
+            Airplane(self.screen, self.scale_factor, random.randint(self.player.get_width(), self.surface_width - self.player.get_width()),
                      self.screen_height, self.level * 2, self.add_snake, self.increment_score), self.planes)
         self.targets += 1
 
 
     def add_supplies(self):
         self.add_drawable(
-            Supply(self.screen, random.randint(self.player.get_width(), self.surface_width - self.player.get_width()),
+            Supply(self.screen, self.scale_factor, random.randint(self.player.get_width(), self.surface_width - self.player.get_width()),
                    self.screen_height), self.supplies)
 
     def add_icecream(self, drawable: ScaledSprite):
@@ -136,7 +139,7 @@ class Game:
     def explode(self, exploder: pygame.sprite.Sprite, x: int, y: int):
         self.exploded.add(exploder)
         if isinstance(exploder, Explodable):
-            self.add_drawable(Explosion(self.screen, x, y, exploder.explosion_size), self.explosions)
+            self.add_drawable(Explosion(self.screen, x, y, exploder.explosion_size * self.scale_factor), self.explosions)
             if isinstance(exploder, Mortal):
                 exploder.dying = True
                 if isinstance(exploder, Airplane):
@@ -179,17 +182,17 @@ class Game:
 
     def draw_status(self):
         self.stats_surface.fill((0, 0, 0))
-        self.stats_surface.blit(self.game_title, (20, 25))
+        self.stats_surface.blit(self.game_title, (20, int(25 * self.scale_factor)))
         level_text = self.font.render(f"LEVEL: {self.level}", True, (0, 255, 0))
-        self.stats_surface.blit(level_text, (750, 25))
+        self.stats_surface.blit(level_text, (750, int(25 * self.scale_factor)))
         score_text = self.font.render(f"SCORE: {self.score}", True, (0, 255, 0))
-        self.stats_surface.blit(score_text, (self.surface_width - score_text.get_width() - 20, 25))
+        self.stats_surface.blit(score_text, (self.surface_width - score_text.get_width() - 20, int(25 * self.scale_factor)))
         life_text = self.font.render(f"LIVES: {self.lives}", True, (0, 255, 0))
         self.stats_surface.blit(life_text,
-                                (self.surface_width - score_text.get_width() - life_text.get_width() - 40, 25))
+                                (self.surface_width - score_text.get_width() - life_text.get_width() - 40, int(25 * self.scale_factor)))
         ammo_text = self.font.render(f"AMMO: {self.ammo}", True, (0, 255, 0))
         self.stats_surface.blit(ammo_text, (
-            self.surface_width - score_text.get_width() - life_text.get_width() - ammo_text.get_width() - 60, 25))
+            self.surface_width - score_text.get_width() - life_text.get_width() - ammo_text.get_width() - 60, int(25 * self.scale_factor)))
 
     def update(self):
         if self.state == GameState.PLAY:
