@@ -43,7 +43,7 @@ class Game:
         self.surface_width = self.screen_width
         self.main_surface = pygame.display.set_mode((self.screen_width, self.screen_height))
 
-        self.scale_factor = 1 if self.screen_width < self.screen_height > 1.8 else 0.5
+        self.scale_factor = 1 if self.screen_width / self.screen_height > 1.8 else 0.5
         Game.STATUS_HEIGHT = 100 * self.scale_factor
         self.surface_height = self.screen_height - Game.STATUS_HEIGHT
         self.screen = pygame.Surface((self.surface_width, self.surface_height))
