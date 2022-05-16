@@ -38,12 +38,13 @@ class Game:
         self.ammo = Game.SUPPLY_SIZE
         self.targets = 0  # Count targets to determine fair timing for resupply
         self.clock = pygame.time.Clock()
+        self.scale_factor = 1 if pygame.display.Info().current_w / pygame.display.Info().current_h > 1.8 else 0.5
         self.screen_width = pygame.display.Info().current_w
         self.screen_height = pygame.display.Info().current_h - 100
         self.surface_width = self.screen_width
-        self.main_surface = pygame.display.set_mode((self.screen_width, self.screen_height))
+        self.main_surface = pygame.display.set_mode((self.screen_width, self.screen_height), pygame.RESIZABLE)
 
-        self.scale_factor = 1 if self.screen_width / self.screen_height > 1.8 else 0.5
+
         Game.STATUS_HEIGHT = 100 * self.scale_factor
         self.surface_height = self.screen_height - Game.STATUS_HEIGHT
         self.screen = pygame.Surface((self.surface_width, self.surface_height))
@@ -95,12 +96,22 @@ class Game:
                                  int(self.surface_height - self.player.get_height()))
         self.sprites.add(self.player)
 
-        self.main_surface.blit(pygame.transform.scale(self.screen, (self.surface_width, self.surface_height)), (0, 0))
+        self.main_surface.blit(self.screen, (0, 0))
         pygame.display.flip()
 
         self.new_plane_event = pygame.USEREVENT + 1
         pygame.time.set_timer(self.new_plane_event, 300)
         self.plane_req_count = 0
+
+    def rescale(self, width: int, height: int):
+        self.screen_width = width
+        self.screen_height = height - (100 * self.scale_factor)
+        self.surface_width = width
+        self.surface_height = height - Game.STATUS_HEIGHT
+        self.screen = pygame.Surface((self.surface_width, self.surface_height))
+        self.player.rect.y = self.surface_height - self.player.get_height()
+        self.player.set_limits(self.surface_width, self.surface_height)
+
 
     def add_plane(self):
         self.add_drawable(
@@ -249,8 +260,7 @@ class Game:
                         if isinstance(exploder, Airplane):
                             self.score += 5
 
-            self.main_surface.blit(pygame.transform.smoothscale(self.screen, (self.surface_width, self.surface_height)),
-                                   (0, 0))
+            self.main_surface.blit(self.screen, (0, 0))
 
             self.draw_status()
             self.main_surface.blit(self.stats_surface, (0, self.surface_height))
@@ -275,6 +285,9 @@ class Game:
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     quit()
+                elif event.type == pygame.VIDEORESIZE:
+                    self.rescale(event.w, event.h)
+
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_p:
                         if self.state == GameState.PLAY:
