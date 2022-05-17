@@ -39,10 +39,11 @@ class Game:
         self.targets = 0  # Count targets to determine fair timing for resupply
         self.clock = pygame.time.Clock()
         self.scale_factor = 1 if pygame.display.Info().current_w / pygame.display.Info().current_h < 1.8 else 0.5
-        self.screen_width = pygame.display.Info().current_w
-        self.screen_height = pygame.display.Info().current_h - 100
+        #self.screen_width = pygame.display.Info().current_w
+        self.screen_height = pygame.display.Info().current_h - 150
+        self.screen_width = int(self.screen_height * 16 / 9)
         self.surface_width = self.screen_width
-        self.main_surface = pygame.display.set_mode((self.screen_width, self.screen_height), pygame.RESIZABLE)
+        self.main_surface = pygame.display.set_mode((self.screen_width, self.screen_height))
 
 
         Game.STATUS_HEIGHT = 100 * self.scale_factor
