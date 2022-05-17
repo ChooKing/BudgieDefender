@@ -104,6 +104,11 @@ class Game:
         self.plane_req_count = 0
 
     def rescale(self, width: int, height: int):
+        if width < 600:
+            width = 600
+        if height < 600:
+            height = 600
+        self.main_surface = pygame.display.set_mode((width, height), pygame.RESIZABLE)
         self.screen_width = width
         self.screen_height = height - (100 * self.scale_factor)
         self.surface_width = width
