@@ -38,7 +38,7 @@ class Game:
         self.ammo = Game.SUPPLY_SIZE
         self.targets = 0  # Count targets to determine fair timing for resupply
         self.clock = pygame.time.Clock()
-        self.scale_factor = 1 if pygame.display.Info().current_w / pygame.display.Info().current_h > 1.8 else 0.5
+        self.scale_factor = 1 if pygame.display.Info().current_w / pygame.display.Info().current_h < 1.8 else 0.5
         self.screen_width = pygame.display.Info().current_w
         self.screen_height = pygame.display.Info().current_h - 100
         self.surface_width = self.screen_width
@@ -110,6 +110,8 @@ class Game:
         self.surface_height = height - Game.STATUS_HEIGHT
         self.screen = pygame.Surface((self.surface_width, self.surface_height))
         self.player.rect.y = self.surface_height - self.player.get_height()
+        if self.player.rect.x + self.player.get_width() > width:
+            self.player.rect.x = width - self.player.get_width()
         self.player.set_limits(self.surface_width, self.surface_height)
 
 
